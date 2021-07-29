@@ -13,7 +13,7 @@ output_prefix = 'feature_store_preprocessed'
 sklearn_job = SKLearnProcessor(
     framework_version='0.23-1',
     role=sagemaker.get_execution_role(),
-    instance_type='ml.m5.xlarge',
+    instance_type='ml.t2.medium',
     instance_count=1, # single machine computing
     base_job_name='deep-attribution-preprocessing'
 )
