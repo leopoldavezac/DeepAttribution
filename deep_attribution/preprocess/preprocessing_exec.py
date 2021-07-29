@@ -24,15 +24,15 @@ sklearn_job.run(
         ProcessingInput(
             input_name='train_features',
             source='s3://' + os.path.join(bucket_nm, input_prefix, 'train.parquet'),
-            destination='/opt/ml/processing/input'),
+            destination='/opt/ml/processing/train_input'),
         ProcessingInput(
             input_name='test_features',
             source='s3://' + os.path.join(bucket_nm, input_prefix, 'test.parquet'),
-            destination='/opt/ml/processing/input'),
+            destination='/opt/ml/processing/test_input'),
         ProcessingInput(
             input_name='val_features',
             source='s3://' + os.path.join(bucket_nm, input_prefix, 'val.parquet'),
-            destination='/opt/ml/processing/input'),
+            destination='/opt/ml/processing/val_input'),
             ],
     outputs=[
         ProcessingOutput(
