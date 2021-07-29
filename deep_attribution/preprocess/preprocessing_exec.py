@@ -19,7 +19,7 @@ sklearn_job = SKLearnProcessor(
 )
 
 sklearn_job.run(
-    code='deep_attribution/preprocess/preprocessing.py',
+    code='/root/DeepAttribution/deep_attribution/preprocess/preprocessing.py',
     inputs=[
         ProcessingInput(
             input_name='train_features',
