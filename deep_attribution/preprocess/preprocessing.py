@@ -1,15 +1,18 @@
-from typing import List
+from typing import List, Dict
 
 import os
 
-from numpy import ndarray
+from json import loads
+
+from numpy import ndarray, zeros
 from pandas import read_parquet, DataFrame
 
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
 
+import boto3
+
 from deep_attribution.s3_utilities import load_json_from_s3
-from utilities import create_categories_for_one_hot_encoding
 
 BUCKET_NM = "deep-attribution"
 CAMPAIGN_NM_TO_INDEX_PATH = "feature_store/campaign_nm_to_index.json"
@@ -32,6 +35,27 @@ def main():
         X, y = load_set(set_nm)
         X = pipeline.transform(X)
         save_set(X, y, set_nm)
+
+
+def load_json_from_s3(bucket_nm: str, path: str) -> Dict:
+
+    s3 = boto3.resource('s3')
+
+    file_conn = s3.Object(bucket_nm, path)
+    file_content = file_conn.get()['Body'].read().decode('utf-8')
+
+    return loads(file_content)
+
+def create_categories_for_one_hot_encoding(campaign_nm_to_index: Dict) -> List:
+
+    nb_categories = len(campaign_nm_to_index.keys())
+    categories = zeros(nb_categories)
+
+    for k, v in campaign_nm_to_index.items():
+        categories[v] = k
+    
+    return categories
+
 
 def load_set(set_nm: str) -> List[ndarray]:
 
