@@ -5,10 +5,9 @@ from pandas import read_parquet
 
 from tensorflow.keras.utils import Sequence
 
-import boto3
 
 from utilities import over_sample
-from deep_attribution.utilities import get_file_nms_in_s3
+from deep_attribution.s3_utilities import get_file_nms_in_s3
 
 BUCKET_NM = "deep-attribution"
 BATCH_FILES_PATH = "feature_store_preprocessed"

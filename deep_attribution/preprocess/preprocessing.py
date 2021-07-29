@@ -8,7 +8,7 @@ from pandas import read_parquet, DataFrame
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
 
-from deep_attribution.utilities import load_json_from_s3
+from deep_attribution.s3_utilities import load_json_from_s3
 from utilities import create_categories_for_one_hot_encoding
 
 BUCKET_NM = "deep-attribution"

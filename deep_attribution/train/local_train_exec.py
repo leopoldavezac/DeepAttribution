@@ -1,8 +1,5 @@
-import os
-
 import sagemaker
 from sagemaker.tensorflow import TensorFlow
-import tensorflow as tf
 
 from deep_attribution.train.utilities import get_X_sample
 

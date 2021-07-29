@@ -1,12 +1,11 @@
 
-from deep_attribution.train.utilities import write_json_to_s3
 from typing import Dict
 
 import argparse
 
 from model.journey_based_deepnn import JourneyBasedDeepNN
 from batch_loader import BatchLoader
-from utilities import load_json_from_s3, create_categories_for_one_hot_encoding
+from deep_attribution.s3_utilities import write_json_to_s3
 
 JOURNEY_MAX_LENGTH = 10
 TARGET_NM = "conversion"
@@ -21,15 +20,13 @@ def run():
 
     args, _ = parse_args()
 
-    campaign_nm_to_index = load_json_from_s3(BUCKET_NM, CAMPAIGN_NM_TO_INDEX_PATH)
-    categories = create_categories_for_one_hot_encoding(campaign_nm_to_index)
 
     hp_nm_to_val = get_hp_nm_to_val_from(args)
     model = get_model(hp_nm_to_val)
 
-    train_batch_loader = BatchLoader(PREDICTOR_NMS, TARGET_NM, "train", categories)
-    test_batch_loader = BatchLoader(PREDICTOR_NMS, TARGET_NM, "test", categories)
-    val_batch_loader = BatchLoader(PREDICTOR_NMS, TARGET_NM, "val", categories)
+    train_batch_loader = BatchLoader(TARGET_NM, "train")
+    test_batch_loader = BatchLoader(TARGET_NM, "test")
+    val_batch_loader = BatchLoader(TARGET_NM, "val")
 
     model.batch_fit(
         train_batch_loader,

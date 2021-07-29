@@ -24,7 +24,7 @@ estimator = TensorFlow(
     instance_count=1,
     hyperparameters=hyperparameters,
     role=sagemaker.get_execution_role(),
-    base_job_name='deep-attribution-trainingg',
+    base_job_name='deep-attribution-training',
     framework_version='2.2',
     py_version='py37',
     script_mode=True
@@ -64,5 +64,7 @@ tuner.wait()
 
 tuning_predictor = tuner.deploy(initial_instance_count=1, instance_type='ml.m5.xlarge')
 
+estimator = tuning_predictor.best_estimator()
+estimator_path = estimator.model_data
 
 # batch prediction
