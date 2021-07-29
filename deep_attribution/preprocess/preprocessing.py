@@ -12,7 +12,6 @@ from sklearn.preprocessing import OneHotEncoder
 
 import boto3
 
-from deep_attribution.s3_utilities import load_json_from_s3
 
 BUCKET_NM = "deep-attribution"
 CAMPAIGN_NM_TO_INDEX_PATH = "feature_store/campaign_nm_to_index.json"
