@@ -1,4 +1,3 @@
-from deep_attribution.train.batch_loader import BUCKET_NM
 from typing import List
 
 
@@ -6,7 +5,7 @@ from numpy import ndarray
 
 from imblearn.over_sampling import SMOTE
 
-from deep_attribution.utilities import get_file_nms_in_s3
+from deep_attribution.s3_utilities import get_file_nms_in_s3
 
 
 def over_sample(X:ndarray, y:ndarray) -> List[ndarray]:
