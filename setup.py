@@ -6,5 +6,5 @@ setup(name='DeepAttribution',
       author='Leopold Davezac',
       author_email='leopoldavezac@gmail.com',
       url='https://github.com/leopoldavezac/DeepAttribution',
-      packages=['deep_attribution.feature_engineering', 'deep_attribution.model'],
+      packages=['deep_attribution'],
      )
