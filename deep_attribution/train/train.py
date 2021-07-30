@@ -5,7 +5,7 @@ import argparse
 
 from model.journey_based_deepnn import JourneyBasedDeepNN
 from batch_loader import BatchLoader
-from deep_attribution.s3_utilities import write_json_to_s3
+from utilities import write_json_to_s3
 
 JOURNEY_MAX_LENGTH = 10
 TARGET_NM = "conversion"
