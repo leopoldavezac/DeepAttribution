@@ -58,7 +58,7 @@ def create_categories_for_one_hot_encoding(campaign_nm_to_index: Dict) -> List:
 
 def load_set(set_nm: str) -> List[ndarray]:
 
-    path = os.path.join('/opt/ml/processing/%s_input/%s.parquet' %(set_nm, set_nm))
+    path = '/opt/ml/processing/%s_input/%s.parquet' %(set_nm, set_nm)
     df = read_parquet(path, usecols=PREDICTOR_NMS+TARGET_NM)
 
     X = df.loc[:, PREDICTOR_NMS].values
