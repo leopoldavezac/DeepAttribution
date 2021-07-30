@@ -33,7 +33,8 @@ def main():
 
         X, y = load_set(set_nm)
         X = pipeline.transform(X)
-        save_set(X, y, set_nm)
+        df = convert_to_dataframe(X, y)
+        save_as_parquet(df, set_nm)
 
 
 def load_json_from_s3(bucket_nm: str, path: str) -> Dict:
@@ -59,17 +60,21 @@ def create_categories_for_one_hot_encoding(campaign_nm_to_index: Dict) -> List:
 def load_set(set_nm: str) -> List[ndarray]:
 
     path = '/opt/ml/processing/%s_input/%s.parquet' %(set_nm, set_nm)
-    df = read_parquet(path, usecols=PREDICTOR_NMS+TARGET_NM)
+    df = read_parquet(path, usecols=PREDICTOR_NMS+[TARGET_NM])
 
     X = df.loc[:, PREDICTOR_NMS].values
     y = df.loc[:,TARGET_NM].values
 
     return [X, y]
 
-def save_set(X: ndarray, y: ndarray, set_nm: str) -> None:
+def convert_to_dataframe(X:ndarray, y:ndarray) -> DataFrame:
 
     df = DataFrame(X)
     df.insert(0, "conversion", y)
+
+    return df
+
+def save_as_parquet(df: DataFrame, set_nm: str) -> None:
 
     df.to_parquet("/opt/ml/processing/output/%s.parquet"%set_nm, index=False)
 
