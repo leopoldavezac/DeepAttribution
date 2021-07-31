@@ -1,7 +1,5 @@
 from typing import List, Dict
 
-import os
-
 from json import loads
 
 from numpy import ndarray, zeros
@@ -31,7 +29,8 @@ def main():
     set_nms = ["train", "test", "val"]
     for set_nm in set_nms:
 
-        X, y = load_set(set_nm)
+        df = load_set(set_nm)
+        X, y = split_into_X_y(df)
         X = pipeline.transform(X)
         df = convert_to_dataframe(X, y)
         save_as_parquet(df, set_nm)
@@ -57,10 +56,14 @@ def create_categories_for_one_hot_encoding(campaign_nm_to_index: Dict) -> List:
     return categories
 
 
-def load_set(set_nm: str) -> List[ndarray]:
+def load_set(set_nm: str) -> DataFrame:
 
     path = '/opt/ml/processing/%s_input/%s.parquet' %(set_nm, set_nm)
     df = read_parquet(path, usecols=PREDICTOR_NMS+[TARGET_NM])
+
+    return df
+
+def split_into_X_y(df: DataFrame) -> List[ndarray]:
 
     X = df.loc[:, PREDICTOR_NMS].values
     y = df.loc[:,TARGET_NM].values
