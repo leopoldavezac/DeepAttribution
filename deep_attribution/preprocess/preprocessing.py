@@ -67,6 +67,13 @@ def load_set(set_nm: str) -> List[ndarray]:
 
     return [X, y]
 
+
+def create_pipeline(one_hot_categories: List[str]) -> Pipeline:
+
+    return Pipeline(steps=[
+        ('one_hot_encoder', OneHotEncoder(categories=one_hot_categories))
+        ])
+
 def convert_to_dataframe(X:ndarray, y:ndarray) -> DataFrame:
 
     df = DataFrame(X)
@@ -78,12 +85,6 @@ def save_as_parquet(df: DataFrame, set_nm: str) -> None:
 
     df.to_parquet("/opt/ml/processing/output/%s.parquet"%set_nm, index=False)
 
-
-def create_pipeline(one_hot_categories: List[str]) -> Pipeline:
-
-    return Pipeline(steps=[
-        ('one_hot_encoder', OneHotEncoder(categories=one_hot_categories))
-        ])
 
 
 if __name__ == '__main__':
