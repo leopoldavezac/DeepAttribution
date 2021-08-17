@@ -1,72 +1,71 @@
+import os
 
 from typing import Dict
 
 import argparse
 
-from model.journey_based_deepnn import JourneyBasedDeepNN
-from batch_loader import BatchLoader
-from utilities import write_json_to_s3
+from deep_attribution.model.journey_based_deepnn import JourneyBasedDeepNN
+from deep_attribution.train.batch_loader import BatchLoader
+from deep_attribution.train.utilities import write_json_to_s3, get_nb_campaigns_from_s3
 
-JOURNEY_MAX_LENGTH = 10
-TARGET_NM = "conversion"
-PREDICTOR_NMS = ["eng_at_index_"+str(i) for i in range(JOURNEY_MAX_LENGTH)]
-
-BUCKET_NM = "deep-attribution"
-CAMPAIGN_NM_TO_INDEX_PATH = "feature_store/campaign_nm_to_index.json"
-
-
+TARGET_NM = "conversion_status"
 
 def run():
 
-    args, _ = parse_args()
+    args = parse_args()
 
+    nb_campaigns = get_nb_campaigns_from_s3(args.bucket_nm)
 
     hp_nm_to_val = get_hp_nm_to_val_from(args)
     model = get_model(hp_nm_to_val)
 
-    train_batch_loader = BatchLoader(TARGET_NM, "train")
-    test_batch_loader = BatchLoader(TARGET_NM, "test")
-    val_batch_loader = BatchLoader(TARGET_NM, "val")
+    set_nm_to_batch_loader = {}
+
+    for set_nm in ["train", "test", "val"]:
+
+        set_nm_to_batch_loader[set_nm] = BatchLoader(
+            TARGET_NM,
+            set_nm,
+            nb_campaigns,
+            int(os.environ["journey_max_len"]),
+            args[set_nm],
+            oversample = True if set_nm == "train" else False
+        )
 
     model.batch_fit(
-        train_batch_loader,
-        test_batch_loader
+        set_nm_to_batch_loader["train"],
+        set_nm_to_batch_loader["test"]
     )
-
-    set_loaders = [train_batch_loader, test_batch_loader, val_batch_loader]
-    set_nms = ["train", "test", "val"]
 
     set_nm_to_score = {}
 
-    for set_nm, set_loader in zip(set_nms, set_loaders):
+    for set_nm, set_loader in set_nm_to_batch_loader.items():
         set_nm_to_score[set_nm] = model.batch_evaluate(set_loader).tolist()
         print("auc - {}: {}".format(set_nm, set_nm_to_score[set_nm][2]))
     
-    write_json_to_s3(set_nm_to_score, BUCKET_NM, "score.json")
+    write_json_to_s3(set_nm_to_score, args.bucket_nm, "score.json")
 
     model.save_attention_model(args.model_dir)
 
 
-def parse_args():
+def parse_args() -> argparse.Namespace:
 
     parser = argparse.ArgumentParser()
+
+    parser.add_argument('--train', type=str)
+    parser.add_argument('--test', type=str)
+    parser.add_argument('--val', type=str)
 
     parser.add_argument('--model_dir', type=str)
 
     parser.add_argument("--epochs", type=int)
-
-    parser.add_argument("--journey_max_length", type=int)
-    parser.add_argument("--n_campaigns", type=int)
-    
     parser.add_argument("--n_hidden_units_embedding", type=int)
     parser.add_argument("--n_hidden_units_lstm", type=int)
-
     parser.add_argument("--dropout_lstm", type=float)
     parser.add_argument("--recurrent_dropout_lstm", type=float)
-    
     parser.add_argument("--learning_rate", type=float)
 
-    return parser.parse_known_args()
+    return parser.parse_args()
 
 
 def get_model(hp_nm_to_val: Dict) -> JourneyBasedDeepNN:
@@ -74,7 +73,7 @@ def get_model(hp_nm_to_val: Dict) -> JourneyBasedDeepNN:
     return JourneyBasedDeepNN(hp_nm_to_val)
 
 
-def get_hp_nm_to_val_from(args):
+def get_hp_nm_to_val_from(args: argparse.Namespace) -> Dict:
 
     return {
         "epochs":args.epochs,
