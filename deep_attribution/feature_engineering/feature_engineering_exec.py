@@ -19,8 +19,8 @@ def execute(config: Dict) -> None:
         base_job_name="deep-attribution-feature-engineering",
         framework_version="2.4",
         role=role,
-        instance_count=2,
-        instance_type="ml.t3.medium",
+        instance_count=config["feature_engineering"]["instance_count"],
+        instance_type=config["feature_engineering"]["instance_type"],
         max_runtime_in_seconds=1200,
     )
 

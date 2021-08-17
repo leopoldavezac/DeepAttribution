@@ -8,10 +8,6 @@ from sagemaker.estimator import EstimatorBase
 import sagemaker
 
 
-
-TRAIN_INSTANCE_TYPE = 'ml.t3.medium'
-
-
 def run(config: Dict) -> EstimatorBase:
 
     sagemaker.Session()
@@ -29,8 +25,8 @@ def run(config: Dict) -> EstimatorBase:
         dependencies=['deep_attribution', 'smote'],
         entry_point='train.py',
         model_dir="model",
-        instance_type=TRAIN_INSTANCE_TYPE,
-        instance_count=1,
+        instance_type=config["training"]["instance_type"],
+        instance_count=config["preprocessing"]["instance_count"],
         hyperparameters=hyperparameters,
         role=sagemaker.get_execution_role(),
         base_job_name='deep-attribution-training',

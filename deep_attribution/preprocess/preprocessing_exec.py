@@ -19,8 +19,8 @@ def execute(config: Dict) -> None:
     sklearn_job = SKLearnProcessor(
         framework_version='0.23-1',
         role=sagemaker.get_execution_role(),
-        instance_type='ml.t3.medium',
-        instance_count=1, # single machine computing
+        instance_type=config["preprocessing"]["instance_type"],
+        instance_count=config["preprocessing"]["instance_count"],
         base_job_name='deep-attribution-preprocessing'
     )
 

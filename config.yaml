@@ -1,2 +1,15 @@
 bucket_nm: "deep_attribution"
 journey_max_len: 10
+feature_engineering:
+  instance_type: "ml.t3.medium"
+  instance_count: 2
+preprocessing:
+  instance_type: "ml.t3.medium"
+  instance_count: 2
+training:
+  instance_type: "ml.t3.medium"
+  instance_count: 2
+attention_report_generation:
+  instance_type: "ml.t3.medium"
+  instance_count: 2
+

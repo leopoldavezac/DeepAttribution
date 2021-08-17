@@ -19,8 +19,8 @@ def execute(config: Dict) -> None:
         base_job_name="deep-attribution-generate-attention_report",
         framework_version="2.4",
         role=role,
-        instance_count=2,
-        instance_type="ml.t3.medium",
+        instance_count=config["attention_report_generation"]["instance_count"],
+        instance_type=config["attention_report_generation"]["instance_type"],
         max_runtime_in_seconds=1200,
     )
 
