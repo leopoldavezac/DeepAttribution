@@ -1,12 +1,21 @@
 from typing import List, Dict
 
-from json import dumps
+from json import dumps, loads
 
-from numpy import ndarray
+from numpy import ndarray, zeros
 
 from imblearn.over_sampling import SMOTE #will fail
 
 import boto3
+
+
+def get_nb_campaigns_from_s3(bucket_nm: str) -> int:
+
+    campaign_nm_to_ohe_index = load_json_from_s3(
+        bucket_nm, "campaign_nm_to_one_hot_index.json"
+        )
+    
+    return len(campaign_nm_to_ohe_index.keys())
 
 
 def over_sample(X:ndarray, y:ndarray) -> List[ndarray]:
@@ -22,18 +31,32 @@ def over_sample(X:ndarray, y:ndarray) -> List[ndarray]:
 
 
 
-def get_X_sample() -> ndarray:
+def get_X_sample(journey_max_len: int, nb_campaigns: int, bucket_nm: str) -> ndarray:
 
     from pandas import read_parquet
         
-    BUCKET_NM = "deep-attribution"
-    BATCH_FILES_PATH = "feature_store_preprocessed"
+    BATCH_FILES_PATH = "feature_store_preprocessed/train.parquet"
 
-    sample_file_nm = get_file_nms_in_s3(BUCKET_NM, BATCH_FILES_PATH)[0]
+    sample_file_nm = get_file_nms_in_s3(bucket_nm, BATCH_FILES_PATH)[0]
 
     df = read_parquet(sample_file_nm)
 
-    return df.drop(columns="conversion").values
+    X = df.drop(columns=["conversion", "journey_id"]).values
+    del df
+
+    X_tensor = reshape_X_with_one_hot_along_z(X, journey_max_len, nb_campaigns)
+
+    return X_tensor
+
+def reshape_X_with_one_hot_along_z(X: ndarray, journey_max_len: int, nb_campaigns: int) -> ndarray:
+
+    nb_obs = X.shape[0]
+    X_tensor = zeros((nb_obs, journey_max_len, nb_campaigns))
+
+    for index in range(journey_max_len):
+        X_tensor[:,index,:] = X[:,nb_campaigns*index, nb_campaigns*(index+1)]
+
+    return X_tensor
 
 
 
@@ -63,3 +86,21 @@ def get_file_nms_in_s3(
             file_nms.append(file_nm)
 
     return file_nms
+
+
+def load_json_from_s3(bucket_nm: str, path: str) -> Dict:
+
+    s3 = boto3.resource('s3')
+
+    file_conn = s3.Object(bucket_nm, path)
+    file_content = file_conn.get()['Body'].read().decode('utf-8')
+
+    return loads(file_content)
+
+
+def write_as_txt_to_s3(text: str, bucket_nm: str, path:str) -> None:
+
+    s3 = boto3.resource("s3")
+
+    file_conn = s3.Object(bucket_nm, path)
+    file_conn.put(Body=text)
