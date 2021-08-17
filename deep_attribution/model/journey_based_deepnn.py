@@ -6,6 +6,7 @@ from tensorflow.keras import backend
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.utils import Sequence
+from tensorflow.keras.metrics import AUC, Precision, Recall, Accuracy
 
 from numpy import ndarray
 
@@ -46,10 +47,17 @@ class JourneyBasedDeepNN:
             epsilon
         )
 
+        metrics = [
+            Accuracy(name="accuracy"),
+            Precision(name="precision"),
+            Recall(name="recall"),
+            AUC(name="auc")
+        ]
+
         self.__nn.compile(
             optimizer=opt,
             loss="binary_crossentropy",
-            metrics=["accuracy", "auc", "precision", "recall"]
+            metrics=metrics
             )
 
 
@@ -125,7 +133,7 @@ class JourneyBasedDeepNN:
         
         
         self.__nn.fit(
-            train_batch_loader,
+            x = train_batch_loader,
             validation_data = test_batch_loader,
             epochs = self.__epochs
             )
