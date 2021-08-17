@@ -1,0 +1,55 @@
+import os
+
+from typing import Dict
+
+import sagemaker
+from sagemaker.spark.processing import PySparkProcessor
+from sagemaker.processing import ProcessingInput, ProcessingOutput
+
+
+def execute(config: Dict) -> None:
+
+    job_args = []
+    for arg_nm, arg_val in config.items():
+        job_args += ["--"+arg_nm, arg_val]
+
+    role = sagemaker.get_execution_role()
+
+    spark_processor = PySparkProcessor(
+        base_job_name="deep-attribution-feature-engineering",
+        framework_version="2.4",
+        role=role,
+        instance_count=2,
+        instance_type="ml.t3.medium",
+        max_runtime_in_seconds=1200,
+    )
+
+    spark_processor.run(
+        submit_app="root/DeepAttribution/deep_attribution/feature_engineering/feature_engineering.py",
+        spark_event_logs_s3_uri="s3://deep-attribution/feature_store/spark_event_logs",
+        logs=False,
+        arguments=job_args,
+        inputs=[
+            ProcessingInput(
+                input_name='raw',
+                source='s3://' + os.path.join(config["bucket_nm"], "raw", 'impressions.parquet'),
+                destination='/opt/ml/processing/raw')
+        ],
+        outputs=[
+            ProcessingOutput(
+                output_name="train_features",
+                source="opt/ml/processing/output/train",
+                destination='s3://' + os.path.join(config["bucket_nm"], "feature_store", 'train.parquet')
+            ),
+            ProcessingOutput(
+                output_name="test_features",
+                source="opt/ml/processing/output/test",
+                destination='s3://' + os.path.join(config["bucket_nm"], "feature_store", 'test.parquet')
+            ),
+            ProcessingOutput(
+                output_name="val_features",
+                source="opt/ml/processing/output/val",
+                destination='s3://' + os.path.join(config["bucket_nm"], "feature_store", 'val.parquet')
+            )
+        ]
+    )
