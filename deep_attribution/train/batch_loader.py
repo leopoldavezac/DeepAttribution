@@ -1,31 +1,34 @@
 from typing import List
 
-from numpy import ndarray
+from numpy import int8, ndarray, zeros
 from pandas import read_parquet
 
 from tensorflow.keras.utils import Sequence
 
-
-from utilities import over_sample
-from deep_attribution.s3_utilities import get_file_nms_in_s3
-
-BUCKET_NM = "deep-attribution"
-BATCH_FILES_PATH = "feature_store_preprocessed"
+from deep_attribution.train.utilities import (
+    over_sample, get_file_nms_in_s3
+)
 
 class BatchLoader(Sequence):
 
     def __init__(
         self,
         target_nm: str,
-        set_nm: str
+        nb_campaigns:int,
+        journey_max_len:int,
+        data_path: str,
+        oversample: bool = False
         ) -> None:
 
         self.__target_nm = target_nm
-        self.__set_nm = set_nm
+        self.__nb_campaigns = nb_campaigns
+        self.__journey_max_len = journey_max_len
+        self.__data_path = data_path
+        self.__oversample = oversample
 
         self.__batch_file_nms = get_file_nms_in_s3(
-            BUCKET_NM,
-            "%s/%s.parquet" % (BATCH_FILES_PATH, set_nm)
+            self.__data_path.split("/")[2],
+            "/".join(self.__data_path.split("/")[3:])
         )
     
     def __len__(self) -> int:
@@ -33,25 +36,41 @@ class BatchLoader(Sequence):
         return len(self.__batch_file_nms)
 
     
-    def __getitem__(self, index: int) -> List[ndarray]:
+    def __getitem__(self, index: int) -> ndarray:
 
-        train_file_nm = self.__batch_file_nms[index]
+        file_nm = self.__batch_file_nms[index]
 
-        X, y = self.__load_batch(train_file_nm)
+        X, y = self.__load_batch(file_nm)
 
-        if self.__set_nm == "train":
+        if self.__oversample:
             X, y = over_sample(X, y)
 
-        return [X, y]
+        X = self.__reshape_as_tensor_with_one_hot_along_z(X)
+
+        return X, y
 
     
-    def __load_batch(self, file_name: str) -> List[ndarray]:
+    def __reshape_as_tensor_with_one_hot_along_z(self, X:ndarray) -> ndarray:
+
+        nb_obs = X.shape[0]
+        X_tensor = zeros((nb_obs, self.__journey_max_len, self.__nb_campaigns), dtype=int8)
+
+        for index in range(self.__journey_max_len):
+            
+            X_tensor[:,index,:] = X[:,self.__nb_campaigns*index:self.__nb_campaigns*(index+1)]
+
+        return X_tensor
+
+
+    
+    def __load_batch(self, file_nm: str) -> List[ndarray]:
 
         df = read_parquet(
-            "s3://%s/feature_store_preprocessed/%s.parquet/%s" % (BUCKET_NM, self.__set_nm, file_name)
+            self.__data_path+"/"+file_nm
             )
+
         y = df.loc[:,self.__target_nm].values
-        X = df.drop(columns=self.__target_nm).values
+        X = df.drop(columns=[self.__target_nm, "journey_id"]).values
 
         return [X, y]
 
