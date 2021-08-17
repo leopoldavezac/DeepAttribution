@@ -1,16 +1,20 @@
 import os
 
+from typing import Dict
+
 import sagemaker
 from sagemaker.sklearn.processing import SKLearnProcessor
 from sagemaker.processing import ProcessingInput, ProcessingOutput
 
-BUCKET_NM = 'deep-attribution'
-CODE_PREFIX = 'deep_attribution/preprocess'
 INPUT_PREFIX = 'feature_store'
 OUTPUT_PREFIX = 'feature_store_preprocessed'
 
 
-def run() -> None:
+def execute(config: Dict) -> None:
+
+    job_args = []
+    for arg_nm, arg_val in config.items():
+        job_args += ["--"+arg_nm, arg_val]
 
     sklearn_job = SKLearnProcessor(
         framework_version='0.23-1',
@@ -21,33 +25,35 @@ def run() -> None:
     )
 
     sklearn_job.run(
-        code='/root/DeepAttribution/deep_attribution/preprocess/preprocessing.py',
+        code='root/DeepAttribution/deep_attribution/preprocess/preprocessing.py',
+        logs=False,
+        arguments=job_args,
         inputs=[
             ProcessingInput(
                 input_name='train_features',
-                source='s3://' + os.path.join(BUCKET_NM, INPUT_PREFIX, 'train.parquet'),
+                source='s3://' + os.path.join(config["bucket_nm"], INPUT_PREFIX, 'train.parquet'),
                 destination='/opt/ml/processing/train_input'),
             ProcessingInput(
                 input_name='test_features',
-                source='s3://' + os.path.join(BUCKET_NM, INPUT_PREFIX, 'test.parquet'),
+                source='s3://' + os.path.join(config["bucket_nm"], INPUT_PREFIX, 'test.parquet'),
                 destination='/opt/ml/processing/test_input'),
             ProcessingInput(
                 input_name='val_features',
-                source='s3://' + os.path.join(BUCKET_NM, INPUT_PREFIX, 'val.parquet'),
+                source='s3://' + os.path.join(config["bucket_nm"], INPUT_PREFIX, 'val.parquet'),
                 destination='/opt/ml/processing/val_input'),
                 ],
         outputs=[
             ProcessingOutput(
                 output_name='train_preprocessed',
                 source='/opt/ml/processing/output/train',
-                destination='s3://' + os.path.join(BUCKET_NM, OUTPUT_PREFIX, 'train.parquet')),
+                destination='s3://' + os.path.join(config["bucket_nm"], OUTPUT_PREFIX, 'train.parquet')),
             ProcessingOutput(
                 output_name='test_preprocessed',
                 source='/opt/ml/processing/output/test',
-                destination='s3://' + os.path.join(BUCKET_NM, OUTPUT_PREFIX, 'test.parquet')),
+                destination='s3://' + os.path.join(config["bucket_nm"], OUTPUT_PREFIX, 'test.parquet')),
             ProcessingOutput(
                 output_name='val_preprocessed',
                 source='/opt/ml/processing/output/val',
-                destination='s3://' + os.path.join(BUCKET_NM, OUTPUT_PREFIX, 'val.parquet'))
+                destination='s3://' + os.path.join(config["bucket_nm"], OUTPUT_PREFIX, 'val.parquet'))
                 ]
         )
