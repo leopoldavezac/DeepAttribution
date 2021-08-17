@@ -1,14 +1,20 @@
+from typing import Dict
+
 from time import gmtime, strftime 
 
 from sagemaker.tuner import IntegerParameter, ContinuousParameter, HyperparameterTuner
 from sagemaker.tensorflow import TensorFlow
+from sagemaker.estimator import EstimatorBase
 import sagemaker
+
 
 
 TRAIN_INSTANCE_TYPE = 'ml.t3.medium'
 
 
-def run() -> None:
+def run(config: Dict) -> EstimatorBase:
+
+    sagemaker.Session()
         
     hyperparameters = {
             "n_hidden_units_embedding":40,
@@ -20,7 +26,7 @@ def run() -> None:
         }
 
     estimator = TensorFlow(
-        source_dir='deep_attribution/train',
+        dependencies=['deep_attribution', 'smote'],
         entry_point='train.py',
         model_dir="model",
         instance_type=TRAIN_INSTANCE_TYPE,
@@ -56,20 +62,15 @@ def run() -> None:
                                 objective_metric_name,
                                 hyperparameter_ranges,
                                 metric_definitions,
-                                max_jobs=15,
-                                max_parallel_jobs=5,
+                                max_jobs=5,
+                                max_parallel_jobs=2,
                                 objective_type=objective_type)
 
     tuning_job_name = "deep-attribution-training-{}".format(strftime("%d-%H-%M-%S", gmtime()))
-    tuner.fit(job_name=tuning_job_name)
+    
+    tuner.fit(job_name=tuning_job_name, inputs=config)
     tuner.wait()
 
+    estimator = tuner.best_estimator()
 
-    tuning_predictor = tuner.deploy(initial_instance_count=1, instance_type='ml.m5.xlarge')
-
-    estimator = tuning_predictor.best_estimator()
-    estimator_path = estimator.model_data
-
-    print(estimator_path)
-
-    # batch prediction
+    return estimator
