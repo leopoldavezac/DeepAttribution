@@ -25,7 +25,7 @@ def execute(config: Dict) -> None:
     )
 
     spark_processor.run(
-        submit_app="root/DeepAttribution/deep_attribution/feature_engineering/feature_engineering.py",
+        submit_app="feature_engineering/feature_engineering.py",
         spark_event_logs_s3_uri="s3://deep-attribution/feature_store/spark_event_logs",
         logs=False,
         arguments=job_args,
