@@ -1,4 +1,4 @@
-bucket_nm: "deep_attribution"
+bucket_nm: "deep-attribution"
 journey_max_len: 10
 feature_engineering:
   instance_type: "ml.t3.medium"
