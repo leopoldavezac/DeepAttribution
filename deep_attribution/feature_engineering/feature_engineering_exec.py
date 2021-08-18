@@ -38,17 +38,17 @@ def execute(config: Dict) -> None:
         outputs=[
             ProcessingOutput(
                 output_name="train_features",
-                source="opt/ml/processing/output/train",
+                source="/opt/ml/processing/output/train",
                 destination='s3://' + os.path.join(config["bucket_nm"], "feature_store", 'train.parquet')
             ),
             ProcessingOutput(
                 output_name="test_features",
-                source="opt/ml/processing/output/test",
+                source="/opt/ml/processing/output/test",
                 destination='s3://' + os.path.join(config["bucket_nm"], "feature_store", 'test.parquet')
             ),
             ProcessingOutput(
                 output_name="val_features",
-                source="opt/ml/processing/output/val",
+                source="/opt/ml/processing/output/val",
                 destination='s3://' + os.path.join(config["bucket_nm"], "feature_store", 'val.parquet')
             )
         ]
