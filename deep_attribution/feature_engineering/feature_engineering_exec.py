@@ -11,7 +11,7 @@ def main(config: Dict) -> None:
 
     job_args = []
     for arg_nm, arg_val in config.items():
-        job_args += ["--"+arg_nm, arg_val]
+        job_args += ["--"+arg_nm, str(arg_val)]
 
     role = sagemaker.get_execution_role()
 
