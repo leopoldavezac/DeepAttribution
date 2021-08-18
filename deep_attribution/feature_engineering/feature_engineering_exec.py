@@ -31,25 +31,25 @@ def main(config: Dict) -> None:
         arguments=job_args,
         inputs=[
             ProcessingInput(
-                input_name='raw',
-                source='s3://' + os.path.join(config["bucket_nm"], "raw", 'impressions.parquet'),
-                destination='/opt/ml/processing/raw')
+                input_name="raw",
+                source= os.path.join("s3://", config["bucket_nm"], "raw", "impressions.parquet"),
+                destination="/opt/ml/processing/raw")
         ],
         outputs=[
             ProcessingOutput(
                 output_name="train_features",
                 source="/opt/ml/processing/output/train",
-                destination='s3://' + os.path.join(config["bucket_nm"], "feature_store", 'train.parquet')
+                destination= os.path.join("s3://", config["bucket_nm"], "feature_store", "train.parquet")
             ),
             ProcessingOutput(
                 output_name="test_features",
                 source="/opt/ml/processing/output/test",
-                destination='s3://' + os.path.join(config["bucket_nm"], "feature_store", 'test.parquet')
+                destination= os.path.join("s3://", config["bucket_nm"], "feature_store", "test.parquet")
             ),
             ProcessingOutput(
                 output_name="val_features",
                 source="/opt/ml/processing/output/val",
-                destination='s3://' + os.path.join(config["bucket_nm"], "feature_store", 'val.parquet')
+                destination= os.path.join("s3://", config["bucket_nm"], "feature_store", "val.parquet")
             )
         ]
     )
