@@ -14,7 +14,7 @@ def main(config: Dict) -> None:
 
     job_args = []
     for arg_nm, arg_val in config.items():
-        job_args += ["--"+arg_nm, arg_val]
+        job_args += ["--"+arg_nm, str(arg_val)]
 
     sklearn_job = SKLearnProcessor(
         framework_version="0.23-1",
