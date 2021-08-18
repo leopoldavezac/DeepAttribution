@@ -1,5 +1,4 @@
 import argparse
-from deep_attribution.preprocess.preprocessing import OUTPUT_PATH, save_as_parquet
 from typing import List, Dict
 
 import sys
@@ -41,7 +40,7 @@ def main() -> None:
     set_nms = ["train", "test", "val"]
 
     for set_nm, df_set in zip(set_nms, df_sets):
-        save_as_parquet(df_set, set_nm, args.bucket_nm)
+        save(df_set, set_nm, args.bucket_nm)
 
 
 
