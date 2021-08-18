@@ -10,7 +10,7 @@ INPUT_PREFIX = 'feature_store'
 OUTPUT_PREFIX = 'feature_store_preprocessed'
 
 
-def execute(config: Dict) -> None:
+def main(config: Dict) -> None:
 
     job_args = []
     for arg_nm, arg_val in config.items():

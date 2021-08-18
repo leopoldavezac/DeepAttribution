@@ -15,7 +15,7 @@ from pyspark.sql.types import *
 import boto3
 
 
-def run() -> None:
+def main() -> None:
 
     args = parse_args()
 
@@ -282,4 +282,4 @@ def save(df: DataFrame, set_nm: str) -> None:
 
 
 if __name__ == "__main__":
-    run()
+    main()

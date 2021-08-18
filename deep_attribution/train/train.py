@@ -10,7 +10,7 @@ from deep_attribution.train.utilities import write_json_to_s3, get_nb_campaigns_
 
 TARGET_NM = "conversion_status"
 
-def run():
+def main():
 
     args = parse_args()
 
@@ -89,4 +89,4 @@ def get_hp_nm_to_val_from(args: argparse.Namespace) -> Dict:
 
 
 if __name__ == "__main__":
-    run()
+    main()

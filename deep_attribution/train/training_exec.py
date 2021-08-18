@@ -8,7 +8,7 @@ from sagemaker.estimator import EstimatorBase
 import sagemaker
 
 
-def run(config: Dict) -> EstimatorBase:
+def main(config: Dict) -> EstimatorBase:
 
     sagemaker.Session()
         

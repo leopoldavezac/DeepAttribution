@@ -7,7 +7,7 @@ from sagemaker.spark.processing import PySparkProcessor
 from sagemaker.processing import ProcessingInput, ProcessingOutput
 
 
-def execute(config: Dict) -> None:
+def main(config: Dict) -> None:
 
     job_args = []
     for arg_nm, arg_val in config.items():

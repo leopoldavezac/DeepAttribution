@@ -4,7 +4,7 @@ from pyspark.sql import DataFrame
 from pyspark.sql.session import SparkSession
 from pyspark.sql.types import *
 
-def run(config: Dict) -> None:
+def main(config: Dict) -> None:
 
     spark = create_spark_session()
 

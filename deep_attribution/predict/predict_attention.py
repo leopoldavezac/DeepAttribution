@@ -9,7 +9,7 @@ from sagemaker.estimator import EstimatorBase
 from deep_attribution.train.utilities import get_nb_campaigns_from_s3, reshape_X_with_one_hot_along_z
 
 
-def predict(estimator: EstimatorBase, config: Dict) -> None:
+def main(estimator: EstimatorBase, config: Dict) -> None:
 
     nb_campaigns = get_nb_campaigns_from_s3(config["bucket_nm"])
 
