@@ -6,12 +6,12 @@ import sagemaker
 from sagemaker.spark.processing import PySparkProcessor
 from sagemaker.processing import ProcessingInput, ProcessingOutput
 
+from deep_attribution.utilities import format_config_as_job_args
+
 
 def main(config: Dict) -> None:
 
-    job_args = []
-    for arg_nm, arg_val in config.items():
-        job_args += ["--"+arg_nm, str(arg_val)]
+    job_args = format_config_as_job_args(config)
 
     role = sagemaker.get_execution_role()
 
