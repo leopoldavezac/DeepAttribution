@@ -7,6 +7,6 @@ def format_config_as_job_args(config: Dict) -> List[str]:
     job_args = []
     for arg_nm, arg_val in config.items():
         if arg_nm not in config_keys_to_exclude:
-            job_args += ["--"+arg_nm, arg_val]
+            job_args += ["--"+arg_nm, str(arg_val)]
 
     return job_args
