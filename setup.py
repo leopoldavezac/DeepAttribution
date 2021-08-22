@@ -10,6 +10,8 @@ setup(name='deep_attribution',
             "deep_attribution.feature_engineering",
             "deep_attribution.preprocess",
             "deep_attribution.train",
-            "deep_attribution.model"
+            "deep_attribution.model",
+            "deep_attribution.generate_attention_report",
+            "deep_attribution.utilities"
             ],
      )
