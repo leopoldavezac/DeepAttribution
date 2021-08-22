@@ -31,19 +31,19 @@ def main(config: Dict) -> None:
         arguments=job_args,
         inputs=[
             ProcessingInput(
-                input_name='campaigns_at_journey_level',
-                source='s3://' + os.path.join(config["bucket_nm"], "feature_store", 'train.parquet'),
-                destination='/opt/ml/processing/feature_store'),
+                input_name="campaigns_at_journey_level",
+                source=os.path.join("s3://", config["bucket_nm"], "feature_store", "train.parquet"),
+                destination="/opt/ml/processing/feature_store"),
             ProcessingInput(
-                input_name='attentions_at_journey_level',
-                source='s3://' + os.path.join(config["bucket_nm"], "attention_report", 'attention_score.parquet'),
-                destination='/opt/ml/processing/attention_report')
+                input_name="attentions_at_journey_level",
+                source=os.path.join("s3://", config["bucket_nm"], "attention_report", "attention_score.parquet"),
+                destination="/opt/ml/processing/attention_report")
         ],
         outputs=[
             ProcessingOutput(
                 output_name="attention_report",
                 source="opt/ml/processing/output/attention_report",
-                destination='s3://' + os.path.join(config["bucket_nm"], "attention_report", 'campaign_attention.parquet')
+                destination=os.path.join("s3://", config["bucket_nm"], "attention_report", "campaign_attention.parquet")
             )
         ]
     )
