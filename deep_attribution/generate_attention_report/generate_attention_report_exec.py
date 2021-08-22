@@ -25,7 +25,7 @@ def main(config: Dict) -> None:
     )
 
     spark_processor.run(
-        submit_app="root/DeepAttribution/deep_attribution/generate_attention_report/generate_attention_report.py",
+        submit_app="generate_attention_report/generate_attention_report.py",
         spark_event_logs_s3_uri="s3://deep-attribution/attention_report/spark_event_logs",
         logs=False,
         arguments=job_args,
