@@ -247,8 +247,6 @@ def get_campaigns_at_journey_level(
         ]
     campaigns = campaigns.select(*col_renaming)
 
-    print(campaigns.show())
-
     schema = [StructField("journey_id", IntegerType(), False)] + [
         StructField(
             "campaign_nm_at_index_%d_in_journey"%i,
@@ -257,8 +255,6 @@ def get_campaigns_at_journey_level(
             ) for i in range(1, journey_max_len+1)
             ]
     schema = StructType(schema)
-
-    print(schema)
 
     campaigns = spark.createDataFrame(campaigns.rdd, schema)
 
