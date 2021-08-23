@@ -24,7 +24,7 @@ def test_main() -> None:
     )
 
     spark_processor.run(
-        submit_app="deep_attribution/feature_engineering/feature_engineering.py",
+        submit_app="../deep_attribution/feature_engineering/feature_engineering.py",
         arguments=job_args,
         inputs=[
             ProcessingInput(
