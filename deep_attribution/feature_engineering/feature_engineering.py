@@ -20,7 +20,7 @@ def main() -> None:
 
     spark = create_spark_session()
 
-    df_impressions = load_impressions(spark)
+    df_impressions = load_impressions(spark, args.bucket_nm)
     df_impressions = create_conversion_id_field(df_impressions, spark)
     df_impressions = create_journey_id_field(df_impressions, spark)
     df_impressions = create_campaign_index_in_journey_field(df_impressions, spark)
@@ -40,7 +40,7 @@ def main() -> None:
     set_nms = ["train", "test", "val"]
 
     for set_nm, df_set in zip(set_nms, df_sets):
-        save(df_set, set_nm)
+        save(df_set, set_nm, args.bucket_nm)
 
 
 
@@ -58,9 +58,9 @@ def create_spark_session() -> SparkSession:
 
     return SparkSession.builder.getOrCreate()
 
-def load_impressions(spark: SparkSession) -> DataFrame:
+def load_impressions(spark: SparkSession, bucket_nm: str) -> DataFrame:
 
-    df = spark.read.parquet("/opt/ml/processing/raw/impressions.parquet")
+    df = spark.read.parquet("s3://%s/raw/impressions.parquet"%bucket_nm)
 
     schema = StructType([
             StructField("timestamp", IntegerType(), False),
@@ -270,9 +270,9 @@ def split_train_test_val(journeys: DataFrame) -> List[DataFrame]:
     return journeys.randomSplit([0.8, 0.1, 0.1], 24)
 
 
-def save(df: DataFrame, set_nm: str) -> None:
+def save(df: DataFrame, set_nm: str, bucket_nm:str) -> None:
 
-    df.write.parquet("/opt/ml/processing/output/%s/%s.parquet" % (set_nm, set_nm))
+    df.write.parquet("s3://%s/feature_store/%s.parquet" % (bucket_nm, set_nm))
 
 
 if __name__ == "__main__":

@@ -4,7 +4,6 @@ from typing import Dict
 
 import sagemaker
 from sagemaker.spark.processing import PySparkProcessor
-from sagemaker.processing import ProcessingInput, ProcessingOutput
 
 from deep_attribution.utilities import format_config_as_job_args
 
@@ -26,30 +25,7 @@ def main(config: Dict) -> None:
 
     spark_processor.run(
         submit_app="feature_engineering/feature_engineering.py",
-        spark_event_logs_s3_uri=os.path.join("s3://", config["bucket_nm"], "feature_store", "spark_event_logs"),
+        spark_event_logs_s3_uri="s3://"+os.path.join(config["bucket_nm"], "feature_store", "spark_event_logs"),
         logs=False,
-        arguments=job_args,
-        inputs=[
-            ProcessingInput(
-                input_name="raw",
-                source= os.path.join("s3://", config["bucket_nm"], "raw", "impressions.parquet"),
-                destination="/opt/ml/processing/raw")
-        ],
-        outputs=[
-            ProcessingOutput(
-                output_name="train_features",
-                source="/opt/ml/processing/output/train",
-                destination= os.path.join("s3://", config["bucket_nm"], "feature_store", "train.parquet")
-            ),
-            ProcessingOutput(
-                output_name="test_features",
-                source="/opt/ml/processing/output/test",
-                destination= os.path.join("s3://", config["bucket_nm"], "feature_store", "test.parquet")
-            ),
-            ProcessingOutput(
-                output_name="val_features",
-                source="/opt/ml/processing/output/val",
-                destination= os.path.join("s3://", config["bucket_nm"], "feature_store", "val.parquet")
-            )
-        ]
+        arguments=job_args
     )
