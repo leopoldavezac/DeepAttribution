@@ -21,12 +21,12 @@ def main() -> None:
     spark = create_spark_session()
 
     df_impressions = load_impressions(spark)
-    df_impressions = convert_timestamp_to_datetime(df_impressions, spark)
     df_impressions = create_conversion_id_field(df_impressions, spark)
     df_impressions = create_journey_id_field(df_impressions, spark)
     df_impressions = create_campaign_index_in_journey_field(df_impressions, spark)
     df_impressions = pad_journey_length(df_impressions, spark, args.journey_max_len)
-    get_campaign_nm_to_one_hot_index(df_impressions)
+    campaign_nm_to_one_hot_index = get_campaign_nm_to_one_hot_index(df_impressions)
+    save_campaign_nm_to_one_hot_index(campaign_nm_to_one_hot_index, args.bucket_nm)
 
     df_journeys_conversion = get_conversion_status_at_journey_level(df_impressions, spark)
     df_journeys_campaigns = get_campaigns_at_journey_level(
@@ -40,7 +40,7 @@ def main() -> None:
     set_nms = ["train", "test", "val"]
 
     for set_nm, df_set in zip(set_nms, df_sets):
-        save(df_set, set_nm, args.bucket_nm)
+        save(df_set, set_nm)
 
 
 
@@ -62,31 +62,30 @@ def load_impressions(spark: SparkSession) -> DataFrame:
 
     df = spark.read.parquet("/opt/ml/processing/raw/impressions.parquet")
 
+    schema = StructType([
+            StructField("timestamp", IntegerType(), False),
+            StructField("uid", IntegerType(), False),
+            StructField("campaign", StringType(), False),
+            StructField("conversion", BooleanType(), False)
+        ])
+
+    df = spark.createDataFrame(df.rdd, schema=schema)
+
+    df = df.sort("uid", "timestamp")
+
     return df
-
-def convert_timestamp_to_datetime(df: DataFrame, spark: SparkSession) -> DataFrame:
-
-    df.createOrReplaceTempView("impressions")
-
-    sql = """
-    select uid, conversion, from_unixtime(timestamp) as datetime, campaign
-    from impressions
-    order by uid, datetime
-    """
-
-    return spark.sql(sql)
 
 def create_conversion_id_field(df: DataFrame, spark: SparkSession) -> DataFrame:
 
     df.createOrReplaceTempView("impressions")
 
     sql = """
-    select uid, conversion, datetime, campaign, 
-    row_number() over(partition by uid order by datetime) as conversion_id
+    select uid, conversion, timestamp, campaign, 
+    row_number() over(partition by uid order by timestamp) as conversion_id
     from impressions
     where conversion == 1
     union
-    select uid, conversion, datetime, campaign, 
+    select uid, conversion, timestamp, campaign, 
     null as conversion_id
     from impressions
     where conversion == 0
@@ -101,7 +100,7 @@ def create_conversion_id_field(df: DataFrame, spark: SparkSession) -> DataFrame:
 
 def backward_fill_conversion_id_by_user(df: DataFrame) -> DataFrame:
 
-    window = Window.partitionBy("uid").orderBy("datetime").rowsBetween(0, sys.maxsize)
+    window = Window.partitionBy("uid").orderBy("timestamp").rowsBetween(0, sys.maxsize)
     conversion_id = last(df["conversion_id"], ignorenulls=True).over(window)
 
     df = df.withColumn("conversion_id", conversion_id)
@@ -114,11 +113,11 @@ def fillna_conversion_id(df: DataFrame, spark: SparkSession) -> DataFrame:
     df.createOrReplaceTempView("impressions")
 
     sql = """
-    select uid, conversion, datetime, campaign, conversion_id
+    select uid, conversion, timestamp, campaign, conversion_id
     from impressions
     where conversion_id is not null
     union
-    select uid, conversion, datetime, campaign,
+    select uid, conversion, timestamp, campaign,
     0 as conversion_id
     from impressions    
     where conversion_id is null
@@ -134,16 +133,16 @@ def create_journey_id_field(df: DataFrame, spark: SparkSession) -> DataFrame:
     df.createOrReplaceTempView("impressions")
 
     sql = """
-    select conversion, datetime, campaign, 
+    select conversion, timestamp, campaign, 
     int(concat(string(uid), conversion_id)) as journey_id
     from impressions
-    order by journey_id, datetime asc
+    order by journey_id, timestamp asc
     """
     df = spark.sql(sql)
 
     schema = StructType([
             StructField("conversion", BooleanType(), False),
-            StructField("datetime", TimestampType(), False),
+            StructField("timestamp", IntegerType(), False),
             StructField("campaign", StringType(), False),
             StructField("journey_id", IntegerType(), False)
         ])
@@ -160,7 +159,7 @@ def create_campaign_index_in_journey_field(
 
     sql = """
     select journey_id, conversion, campaign, 
-    row_number() over(partition by journey_id order by datetime asc) as campaign_index_in_journey
+    row_number() over(partition by journey_id order by timestamp asc) as campaign_index_in_journey
     from impressions
     """
 
@@ -209,10 +208,10 @@ def get_campaign_nm_to_one_hot_index(df: DataFrame) -> Dict:
     return campaign_nm_to_one_hot_index
 
 
-def save_campaign_nm_to_one_hot_index(campaign_nm_to_one_hot_index: Dict) -> None:
+def save_campaign_nm_to_one_hot_index(campaign_nm_to_one_hot_index: Dict, bucket_nm:str) -> None:
 
     s3 = boto3.resource("s3")
-    obj = s3.Object("deep-attribution", "campaign_nm_to_one_hot_index.json")
+    obj = s3.Object(bucket_nm, "campaign_nm_to_one_hot_index.json")
 
     obj.put(Body=bytes(dumps(campaign_nm_to_one_hot_index).encode("UTF-8")))
 
