@@ -1,13 +1,12 @@
 from typing import List
 
-from numpy import int8, ndarray, zeros
+from numpy import uint8, ndarray, zeros
 from pandas import read_parquet
 
 from tensorflow.keras.utils import Sequence
 
-from deep_attribution.train.utilities import (
-    over_sample, get_file_nms_in_s3
-)
+from deep_attribution.train.utilities import get_file_nms_in_s3
+from deep_attribution.train.oversampling import oversample
 
 class BatchLoader(Sequence):
 
@@ -43,7 +42,7 @@ class BatchLoader(Sequence):
         X, y = self.__load_batch(file_nm)
 
         if self.__oversample:
-            X, y = over_sample(X, y)
+            X, y = oversample(X, y)
 
         X = self.__reshape_as_tensor_with_one_hot_along_z(X)
 
@@ -53,7 +52,7 @@ class BatchLoader(Sequence):
     def __reshape_as_tensor_with_one_hot_along_z(self, X:ndarray) -> ndarray:
 
         nb_obs = X.shape[0]
-        X_tensor = zeros((nb_obs, self.__journey_max_len, self.__nb_campaigns), dtype=int8)
+        X_tensor = zeros((nb_obs, self.__journey_max_len, self.__nb_campaigns), dtype=uint8)
 
         for index in range(self.__journey_max_len):
             

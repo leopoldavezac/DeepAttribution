@@ -4,8 +4,6 @@ from json import dumps, loads
 
 from numpy import ndarray, zeros
 
-from imblearn.over_sampling import SMOTE #will fail
-
 import boto3
 
 
@@ -16,18 +14,6 @@ def get_nb_campaigns_from_s3(bucket_nm: str) -> int:
         )
     
     return len(campaign_nm_to_ohe_index.keys())
-
-
-def over_sample(X:ndarray, y:ndarray) -> List[ndarray]:
-
-    resampler = SMOTE(random_state=42)
-
-    m, n, p = X.shape
-
-    X_resampled, y_resampled = resampler.fit_resample(X.reshape((m, n*p)), y)
-    X_resampled = X_resampled.reshape((-1, n, p))
-
-    return [X_resampled, y_resampled]
 
 
 
