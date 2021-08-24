@@ -20,7 +20,7 @@ def main() -> None:
 
     spark = create_spark_session()
 
-    df_impressions = load_impressions(spark, args.bucket_nm)
+    df_impressions = load_impressions(spark)
     df_impressions = convert_timestamp_to_datetime(df_impressions, spark)
     df_impressions = create_conversion_id_field(df_impressions, spark)
     df_impressions = create_journey_id_field(df_impressions, spark)
@@ -58,7 +58,7 @@ def create_spark_session() -> SparkSession:
 
     return SparkSession.builder.getOrCreate()
 
-def load_impressions(spark: SparkSession, bucket_nm: str) -> DataFrame:
+def load_impressions(spark: SparkSession) -> DataFrame:
 
     df = spark.read.parquet("/opt/ml/processing/raw/impressions.parquet")
 
