@@ -9,6 +9,7 @@ from pyspark.sql.session import SparkSession
 from pyspark.sql.types import *
 
 from deep_attribution.feature_engineering.feature_engineering import (
+    main,
     create_conversion_id_field,
     create_campaign_index_in_journey_field,
     create_journey_id_field,
@@ -23,6 +24,62 @@ os.environ['PYSPARK_PYTHON'] = sys.executable
 os.environ['PYSPARK_DRIVER_PYTHON'] = sys.executable
 
 SPARK = SparkSession.builder.getOrCreate()
+
+def test_main(mocker):
+
+    BUCKET_NM = "deep-attribution"
+    JOURNEY_MAX_LEN = 3
+
+    INPUT = SPARK.createDataFrame(
+        [
+            (1, False, 2, "google"),
+            (1, True, 3, "display"),
+            (1, False, 4, "facebook"),
+            (2, False, 16, "google"),
+            (2, False, 17, "facebook"),
+            (2, False, 4, "display")
+        ],
+        StructType([
+            StructField("uid", IntegerType(), False),
+            StructField("conversion", BooleanType(), False),
+            StructField("timestamp", IntegerType(), False),
+            StructField("campaign", StringType(), False)
+        ])
+    )
+
+    PARSER = ParserMock(BUCKET_NM, JOURNEY_MAX_LEN)
+
+    mocker.patch(
+        "deep_attribution.feature_engineering.feature_engineering.parse_args",
+        return_value=PARSER
+    )
+    
+    mocker.patch(
+        "deep_attribution.feature_engineering.feature_engineering.load_impressions",
+        return_value=INPUT
+    )
+
+    mocker.patch(
+        "deep_attribution.feature_engineering.feature_engineering.save_campaign_nm_to_one_hot_index",
+        return_value=None
+    )
+
+    mocker.patch(
+        "deep_attribution.feature_engineering.feature_engineering.save",
+        return_value=None
+    )
+
+    main()
+
+    assert True
+
+
+class ParserMock:
+
+    def __init__(self, bucket_nm, journey_max_len):
+        self.bucket_nm = bucket_nm
+        self.journey_max_len = journey_max_len
+
 
 def test_create_conversion_id_field():
 
