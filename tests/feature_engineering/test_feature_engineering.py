@@ -29,21 +29,14 @@ def test_main(mocker):
 
     BUCKET_NM = "deep-attribution"
     JOURNEY_MAX_LEN = 3
-
+    
     INPUT = SPARK.createDataFrame(
-        [
-            (1, False, 2, "google"),
-            (1, True, 3, "display"),
-            (1, False, 4, "facebook"),
-            (2, False, 16, "google"),
-            (2, False, 17, "facebook"),
-            (2, False, 4, "display")
-        ],
+        SPARK.read.parquet("tests/feature_engineering/impressions_sample.parquet").rdd,
         StructType([
-            StructField("uid", IntegerType(), False),
-            StructField("conversion", BooleanType(), False),
             StructField("timestamp", IntegerType(), False),
-            StructField("campaign", StringType(), False)
+            StructField("uid", IntegerType(), False),
+            StructField("campaign", StringType(), False),
+            StructField("conversion", BooleanType(), False)
         ])
     )
 
