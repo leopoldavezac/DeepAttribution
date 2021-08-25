@@ -25,6 +25,7 @@ os.environ['PYSPARK_DRIVER_PYTHON'] = sys.executable
 
 SPARK = SparkSession.builder.getOrCreate()
 
+
 def test_main(mocker):
 
     BUCKET_NM = "deep-attribution"
@@ -159,7 +160,7 @@ def test_create_journey_id_field():
             StructField("conversion", BooleanType(), False),
             StructField("timestamp", IntegerType(), False),
             StructField("campaign", StringType(), False),
-            StructField("journey_id", IntegerType(), False)
+            StructField("journey_id", LongType(), False)
         ])
     )
 
@@ -185,7 +186,7 @@ def test_create_campaign_index_in_journey_field():
             StructField("conversion", BooleanType(), False),
             StructField("timestamp", IntegerType(), False),
             StructField("campaign", StringType(), False),
-            StructField("journey_id", IntegerType(), False)
+            StructField("journey_id", LongType(), False)
         ])
     )
 
@@ -199,7 +200,7 @@ def test_create_campaign_index_in_journey_field():
             (20, False, "display", 1)
         ],
         StructType([
-            StructField("journey_id", IntegerType(), False),
+            StructField("journey_id", LongType(), False),
             StructField("conversion", BooleanType(), False),
             StructField("campaign", StringType(), False),
             StructField("campaign_index_in_journey", IntegerType(), False)
@@ -226,7 +227,7 @@ def test_pad_journey_length():
             (20, False, "display", 1)
         ],
         StructType([
-            StructField("journey_id", IntegerType(), False),
+            StructField("journey_id", LongType(), False),
             StructField("conversion", BooleanType(), False),
             StructField("campaign", StringType(), False),
             StructField("campaign_index_in_journey", IntegerType(), False)
@@ -247,7 +248,7 @@ def test_pad_journey_length():
         StructType([
             StructField("conversion", BooleanType(), False),
             StructField("campaign", StringType(), False),
-            StructField("journey_id", IntegerType(), False),
+            StructField("journey_id", LongType(), False),
             StructField("campaign_index_in_journey", IntegerType(), False)
         ])
     )
@@ -272,7 +273,7 @@ def test_get_campaign_nm_to_one_hot_index():
         StructType([
             StructField("conversion", BooleanType(), False),
             StructField("campaign", StringType(), False),
-            StructField("journey_id", IntegerType(), False),
+            StructField("journey_id", LongType(), False),
             StructField("campaign_index_in_journey", IntegerType(), False)
         ])
     )
@@ -302,7 +303,7 @@ def test_get_conversion_status_at_journey_level():
         StructType([
             StructField("conversion", BooleanType(), False),
             StructField("campaign", StringType(), False),
-            StructField("journey_id", IntegerType(), False),
+            StructField("journey_id", LongType(), False),
             StructField("campaign_index_in_journey", IntegerType(), False)
         ])
     )
@@ -314,7 +315,7 @@ def test_get_conversion_status_at_journey_level():
             (20, False)
         ],
         StructType([
-            StructField("journey_id", IntegerType(), False),
+            StructField("journey_id", LongType(), False),
             StructField("conversion_status", BooleanType(), False)
         ])
     )
@@ -339,7 +340,7 @@ def test_get_campaigns_at_journey_level():
         StructType([
             StructField("conversion", BooleanType(), False),
             StructField("campaign", StringType(), False),
-            StructField("journey_id", IntegerType(), False),
+            StructField("journey_id", LongType(), False),
             StructField("campaign_index_in_journey", IntegerType(), False)
         ])
     )
@@ -353,7 +354,7 @@ def test_get_campaigns_at_journey_level():
             (20, "display", "facebook")
         ],
         StructType([
-            StructField("journey_id", IntegerType(), False),
+            StructField("journey_id", LongType(), False),
             StructField("campaign_nm_at_index_1_in_journey", StringType(), False),
             StructField("campaign_nm_at_index_2_in_journey", StringType(), True),
         ])
@@ -375,7 +376,7 @@ def test_join_at_journey_level():
             (20, "display", "facebook")
         ],
         StructType([
-            StructField("journey_id", IntegerType(), False),
+            StructField("journey_id", LongType(), False),
             StructField("campaign_nm_at_index_1_in_journey", StringType(), False),
             StructField("campaign_nm_at_index_2_in_journey", StringType(), True),
         ])
@@ -388,7 +389,7 @@ def test_join_at_journey_level():
             (20, False)
         ],
         StructType([
-            StructField("journey_id", IntegerType(), False),
+            StructField("journey_id", LongType(), False),
             StructField("conversion_status", BooleanType(), False)
         ])
     )
@@ -400,7 +401,7 @@ def test_join_at_journey_level():
             (20, "display", "facebook", False)
         ],
         StructType([
-            StructField("journey_id", IntegerType(), False),
+            StructField("journey_id", LongType(), False),
             StructField("campaign_nm_at_index_1_in_journey", StringType(), False),
             StructField("campaign_nm_at_index_2_in_journey", StringType(), True),
             StructField("conversion_status", BooleanType(), False)

@@ -136,7 +136,7 @@ def create_journey_id_field(df: DataFrame, spark: SparkSession) -> DataFrame:
 
     sql = """
     select conversion, timestamp, campaign,
-    int(concat(string(uid), string(conversion_id))) as journey_id
+    bigint(concat(string(uid), string(conversion_id))) as journey_id
     from impressions
     order by journey_id, timestamp asc
     """
@@ -146,7 +146,7 @@ def create_journey_id_field(df: DataFrame, spark: SparkSession) -> DataFrame:
             StructField("conversion", BooleanType(), False),
             StructField("timestamp", IntegerType(), False),
             StructField("campaign", StringType(), False),
-            StructField("journey_id", IntegerType(), False)
+            StructField("journey_id", LongType(), False)
         ])
 
     df = spark.createDataFrame(df.rdd, schema=schema)
@@ -168,7 +168,7 @@ def create_campaign_index_in_journey_field(
     df = spark.sql(sql)
 
     schema = StructType([
-        StructField("journey_id", IntegerType(), False),
+        StructField("journey_id", LongType(), False),
         StructField("conversion", BooleanType(), False),
         StructField("campaign", StringType(), False),
         StructField("campaign_index_in_journey", IntegerType(), False)
@@ -224,7 +224,7 @@ def get_conversion_status_at_journey_level(df: DataFrame, spark: SparkSession) -
     conversion = conversion.withColumnRenamed("max(conversion)", "conversion_status")
 
     schema = StructType([
-        StructField("journey_id", IntegerType(), False),
+        StructField("journey_id", LongType(), False),
         StructField("conversion_status", BooleanType(), False),
     ])
 
@@ -248,7 +248,7 @@ def get_campaigns_at_journey_level(
         ]
     campaigns = campaigns.select(*col_renaming)
 
-    schema = [StructField("journey_id", IntegerType(), False)] + [
+    schema = [StructField("journey_id", LongType(), False)] + [
         StructField(
             "campaign_nm_at_index_%d_in_journey"%i,
             StringType(),
