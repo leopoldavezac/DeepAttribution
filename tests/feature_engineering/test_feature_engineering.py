@@ -78,34 +78,34 @@ def test_create_conversion_id_field():
 
     INPUT = SPARK.createDataFrame(
         [
-            (1, False, to_datetime("1970-01-01 01:03:42"), "google"),
-            (1, True, to_datetime("1970-01-01 01:03:09"), "display"),
-            (1, False, to_datetime("1970-01-01 01:02:25"), "facebook"),
-            (2, False, to_datetime("1970-01-01 01:02:47"), "google"),
-            (2, False, to_datetime("1970-01-01 01:02:25"), "facebook"),
-            (2, False, to_datetime("1970-01-01 01:01:28"), "display")
+            (1, False, 10, "google"),
+            (1, True, 9, "display"),
+            (1, False, 7, "facebook"),
+            (2, False, 8, "google"),
+            (2, False, 7, "facebook"),
+            (2, False, 6, "display")
         ],
         StructType([
             StructField("uid", IntegerType(), False),
             StructField("conversion", BooleanType(), False),
-            StructField("datetime", TimestampType(), False),
+            StructField("timestamp", IntegerType(), False),
             StructField("campaign", StringType(), False)
         ])
     )
 
     EXPECTED = SPARK.createDataFrame(
         [
-            (1, False, to_datetime("1970-01-01 01:03:42"), "google", 0),
-            (1, True, to_datetime("1970-01-01 01:03:09"), "display", 1),
-            (1, False, to_datetime("1970-01-01 01:02:25"), "facebook", 1),
-            (2, False, to_datetime("1970-01-01 01:02:47"), "google", 0),
-            (2, False, to_datetime("1970-01-01 01:02:25"), "facebook", 0),
-            (2, False, to_datetime("1970-01-01 01:01:28"), "display", 0)
+            (1, False, 10, "google", 0),
+            (1, True, 9, "display", 1),
+            (1, False, 7, "facebook", 1),
+            (2, False, 8, "google", 0),
+            (2, False, 7, "facebook", 0),
+            (2, False, 6, "display", 0)
         ],
         StructType([
             StructField("uid", IntegerType(), False),
             StructField("conversion", BooleanType(), False),
-            StructField("datetime", TimestampType(), False),
+            StructField("timestamp", IntegerType(), False),
             StructField("campaign", StringType(), False),
             StructField("conversion_id", IntegerType(), True)
         ])
@@ -126,17 +126,17 @@ def test_create_journey_id_field():
 
     INPUT = SPARK.createDataFrame(
         [
-            (1, False, to_datetime("1970-01-01 01:03:42"), "google", 0),
-            (1, True, to_datetime("1970-01-01 01:03:09"), "display", 1),
-            (1, False, to_datetime("1970-01-01 01:02:25"), "facebook", 1),
-            (2, False, to_datetime("1970-01-01 01:02:47"), "google", 0),
-            (2, False, to_datetime("1970-01-01 01:02:25"), "facebook", 0),
-            (2, False, to_datetime("1970-01-01 01:01:28"), "display", 0)
+            (1, False, 10, "google", 0),
+            (1, True, 9, "display", 1),
+            (1, False, 7, "facebook", 1),
+            (2, False, 8, "google", 0),
+            (2, False, 7, "facebook", 0),
+            (2, False, 6, "display", 0)
         ],
         StructType([
             StructField("uid", IntegerType(), False),
             StructField("conversion", BooleanType(), False),
-            StructField("datetime", TimestampType(), False),
+            StructField("timestamp", IntegerType(), False),
             StructField("campaign", StringType(), False),
             StructField("conversion_id", IntegerType(), True)
         ])
@@ -144,16 +144,16 @@ def test_create_journey_id_field():
 
     EXPECTED = SPARK.createDataFrame(
         [
-            (False, to_datetime("1970-01-01 01:03:42"), "google", 10),
-            (True, to_datetime("1970-01-01 01:03:09"), "display", 11),
-            (False, to_datetime("1970-01-01 01:02:25"), "facebook", 11),
-            (False, to_datetime("1970-01-01 01:02:47"), "google", 20),
-            (False, to_datetime("1970-01-01 01:02:25"), "facebook", 20),
-            (False, to_datetime("1970-01-01 01:01:28"), "display", 20)
+            (False, 10, "google", 10),
+            (True, 9, "display", 11),
+            (False, 7, "facebook", 11),
+            (False, 8, "google", 20),
+            (False, 7, "facebook", 20),
+            (False, 6, "display", 20)
         ],
         StructType([
             StructField("conversion", BooleanType(), False),
-            StructField("datetime", TimestampType(), False),
+            StructField("timestamp", IntegerType(), False),
             StructField("campaign", StringType(), False),
             StructField("journey_id", IntegerType(), False)
         ])
@@ -170,16 +170,16 @@ def test_create_campaign_index_in_journey_field():
 
     INPUT = SPARK.createDataFrame(
         [
-            (False, to_datetime("1970-01-01 01:03:42"), "google", 10),
-            (True, to_datetime("1970-01-01 01:03:09"), "display", 11),
-            (False, to_datetime("1970-01-01 01:02:25"), "facebook", 11),
-            (False, to_datetime("1970-01-01 01:02:47"), "google", 20),
-            (False, to_datetime("1970-01-01 01:02:25"), "facebook", 20),
-            (False, to_datetime("1970-01-01 01:01:28"), "display", 20)
+            (False, 10, "google", 10),
+            (True, 9, "display", 11),
+            (False, 7, "facebook", 11),
+            (False, 8, "google", 20),
+            (False, 7, "facebook", 20),
+            (False, 6, "display", 20)
         ],
         StructType([
             StructField("conversion", BooleanType(), False),
-            StructField("datetime", TimestampType(), False),
+            StructField("timestamp", IntegerType(), False),
             StructField("campaign", StringType(), False),
             StructField("journey_id", IntegerType(), False)
         ])
