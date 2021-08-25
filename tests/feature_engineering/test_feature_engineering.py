@@ -79,7 +79,8 @@ def test_create_conversion_id_field():
     INPUT = SPARK.createDataFrame(
         [
             (1, False, 10, "google"),
-            (1, True, 9, "display"),
+            (1, True, 9, "google"),
+            (1, True, 8, "display"),
             (1, False, 7, "facebook"),
             (2, False, 8, "google"),
             (2, False, 7, "facebook"),
@@ -96,7 +97,8 @@ def test_create_conversion_id_field():
     EXPECTED = SPARK.createDataFrame(
         [
             (1, False, 10, "google", 0),
-            (1, True, 9, "display", 1),
+            (1, True, 9, "google", 2),
+            (1, True, 8, "display", 1),
             (1, False, 7, "facebook", 1),
             (2, False, 8, "google", 0),
             (2, False, 7, "facebook", 0),
@@ -116,6 +118,8 @@ def test_create_conversion_id_field():
         INPUT,
         SPARK
         )
+
+    obtained = obtained.sort("uid", "timestamp")
 
     assert check_dataframes_schema_are_equal(EXPECTED, obtained)
 
@@ -426,6 +430,8 @@ def check_dataframes_schema_are_equal(ref, test):
 
 
 def check_dataframes_data_are_equal(ref, test):
+
+    print(ref.show(), test.show())
 
     ref = ref.collect()
     test = test.collect()
