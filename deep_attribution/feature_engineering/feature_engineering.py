@@ -7,7 +7,7 @@ from json import dumps
 
 from pyspark.sql import DataFrame, Window
 from pyspark.sql.session import SparkSession
-from pyspark.sql.functions import col, last
+from pyspark.sql.functions import col, first
 from pyspark.sql.types import *
 
 
@@ -21,10 +21,12 @@ def main() -> None:
     spark = create_spark_session()
 
     df_impressions = load_impressions(spark, args.bucket_nm)
+    
     df_impressions = create_conversion_id_field(df_impressions, spark)
     df_impressions = create_journey_id_field(df_impressions, spark)
     df_impressions = create_campaign_index_in_journey_field(df_impressions, spark)
     df_impressions = pad_journey_length(df_impressions, spark, args.journey_max_len)
+    
     campaign_nm_to_one_hot_index = get_campaign_nm_to_one_hot_index(df_impressions)
     save_campaign_nm_to_one_hot_index(campaign_nm_to_one_hot_index, args.bucket_nm)
 
@@ -101,7 +103,7 @@ def create_conversion_id_field(df: DataFrame, spark: SparkSession) -> DataFrame:
 def backward_fill_conversion_id_by_user(df: DataFrame) -> DataFrame:
 
     window = Window.partitionBy("uid").orderBy("timestamp").rowsBetween(0, sys.maxsize)
-    conversion_id = last(df["conversion_id"], ignorenulls=True).over(window)
+    conversion_id = first(df["conversion_id"], ignorenulls=True).over(window)
 
     df = df.withColumn("conversion_id", conversion_id)
 
@@ -133,8 +135,8 @@ def create_journey_id_field(df: DataFrame, spark: SparkSession) -> DataFrame:
     df.createOrReplaceTempView("impressions")
 
     sql = """
-    select conversion, timestamp, campaign, 
-    int(concat(string(uid), conversion_id)) as journey_id
+    select conversion, timestamp, campaign,
+    int(concat(string(uid), string(conversion_id))) as journey_id
     from impressions
     order by journey_id, timestamp asc
     """
@@ -147,7 +149,7 @@ def create_journey_id_field(df: DataFrame, spark: SparkSession) -> DataFrame:
             StructField("journey_id", IntegerType(), False)
         ])
 
-    df = spark.createDataFrame(df.rdd, schema)
+    df = spark.createDataFrame(df.rdd, schema=schema)
 
     return df
 
@@ -173,7 +175,7 @@ def create_campaign_index_in_journey_field(
 
     ])
 
-    df = spark.createDataFrame(df.rdd, schema)
+    df = spark.createDataFrame(df.rdd, schema=schema)
 
     return df
 
@@ -226,7 +228,7 @@ def get_conversion_status_at_journey_level(df: DataFrame, spark: SparkSession) -
         StructField("conversion_status", BooleanType(), False),
     ])
 
-    conversion = spark.createDataFrame(conversion.rdd, schema)
+    conversion = spark.createDataFrame(conversion.rdd, schema=schema)
     
     return conversion
 
@@ -255,7 +257,7 @@ def get_campaigns_at_journey_level(
             ]
     schema = StructType(schema)
 
-    campaigns = spark.createDataFrame(campaigns.rdd, schema)
+    campaigns = spark.createDataFrame(campaigns.rdd, schema=schema)
 
     return campaigns
 
