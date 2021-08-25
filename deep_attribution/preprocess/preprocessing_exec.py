@@ -27,33 +27,5 @@ def main(config: Dict) -> None:
     sklearn_job.run(
         code="preprocess/preprocessing.py",
         logs=False,
-        arguments=job_args,
-        inputs=[
-            ProcessingInput(
-                input_name="train_features",
-                source=os.path.join("s3://", config["bucket_nm"], INPUT_PREFIX, "train.parquet"),
-                destination="/opt/ml/processing/train_input"),
-            ProcessingInput(
-                input_name="test_features",
-                source=os.path.join("s3://", config["bucket_nm"], INPUT_PREFIX, "test.parquet"),
-                destination="/opt/ml/processing/test_input"),
-            ProcessingInput(
-                input_name="val_features",
-                source=os.path.join("s3://", config["bucket_nm"], INPUT_PREFIX, "val.parquet"),
-                destination="/opt/ml/processing/val_input"),
-                ],
-        outputs=[
-            ProcessingOutput(
-                output_name="train_preprocessed",
-                source="/opt/ml/processing/output/train",
-                destination=os.path.join("s3://", config["bucket_nm"], OUTPUT_PREFIX, "train.parquet")),
-            ProcessingOutput(
-                output_name="test_preprocessed",
-                source="/opt/ml/processing/output/test",
-                destination=os.path.join("s3://", config["bucket_nm"], OUTPUT_PREFIX, "test.parquet")),
-            ProcessingOutput(
-                output_name="val_preprocessed",
-                source="/opt/ml/processing/output/val",
-                destination=os.path.join("s3://", config["bucket_nm"], OUTPUT_PREFIX, "val.parquet"))
-                ]
+        arguments=job_args
         )
