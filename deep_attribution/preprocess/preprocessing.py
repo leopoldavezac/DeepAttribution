@@ -6,7 +6,6 @@ from json import loads
 from numpy import concatenate, ndarray, zeros
 from pandas import read_parquet, DataFrame
 
-from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
 
@@ -14,7 +13,7 @@ import boto3
 
 
 
-def main():
+def main() -> None:
 
     args = parse_args()
         
