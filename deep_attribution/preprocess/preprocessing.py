@@ -25,7 +25,7 @@ def main() -> None:
     set_nms = ["train", "test", "val"]
     for set_nm in set_nms:
 
-        df_set_obs = load_set(set_nm)
+        df_set_obs = load_set(set_nm, args.bucket_nm)
         X = pipeline.transform(
             df_set_obs.drop(columns=["journey_id", "conversion_status"]).values
             )
@@ -33,7 +33,7 @@ def main() -> None:
             X, df_set_obs["journey_id"].values, df_set_obs["conversion_status"].values,
             args.journey_max_len
             )
-        save_as_parquet(df_set_obs, set_nm)
+        save_as_parquet(df_set_obs, set_nm, args.bucket_nm)
 
 
 def parse_args() -> argparse.Namespace:
@@ -67,9 +67,9 @@ def create_categories_for_one_hot_encoding(campaign_nm_to_index: Dict) -> List[s
     return arr_category_nms.tolist()
 
 
-def load_set(set_nm: str) -> DataFrame:
+def load_set(set_nm: str, bucket_nm:str) -> DataFrame:
 
-    path = '/opt/ml/processing/%s_input/%s.parquet' %(set_nm, set_nm)
+    path = "s3://%s/feature_store/%s.parquet" % (bucket_nm, set_nm)
     df_set_obs = read_parquet(path)
 
     return df_set_obs
@@ -120,9 +120,9 @@ def format_preprocessed_obs(
     return df_set_obs_obs
 
 
-def save_as_parquet(df_set_obs: DataFrame, set_nm: str) -> None:
+def save_as_parquet(df_set_obs: DataFrame, set_nm: str, bucket_nm:str) -> None:
 
-    df_set_obs.to_parquet("/opt/ml/processing/output/%s.parquet"%set_nm, index=False)
+    df_set_obs.to_parquet("s3://%s/feature_store_preprocessed/%s.parquet"%(bucket_nm, set_nm), index=False)
 
 
 if __name__ == '__main__':
