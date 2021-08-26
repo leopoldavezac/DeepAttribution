@@ -3,7 +3,7 @@ from typing import List, Dict
 
 from json import loads
 
-from numpy import concatenate, ndarray, zeros
+from numpy import concatenate, ndarray, zeros, bool as np_bool, object as np_object
 from pandas import read_parquet, DataFrame
 
 from sklearn.pipeline import Pipeline
@@ -18,19 +18,20 @@ def main() -> None:
     args = parse_args()
         
     campaign_nm_to_index = load_json_from_s3(args.bucket_nm, "campaign_nm_to_one_hot_index.json")
-    one_hot_categories = create_categories_for_one_hot_encoding(campaign_nm_to_index)
+    one_hot_categories = create_categories_for_one_hot_encoding(
+        campaign_nm_to_index, args.journey_max_len)
 
-    pipeline = create_pipeline(one_hot_categories)
+    ohe = create_one_hot_encoder(one_hot_categories)
 
     set_nms = ["train", "test", "val"]
     for set_nm in set_nms:
 
         df_set_obs = load_set(set_nm, args.bucket_nm)
-        X = pipeline.transform(
-            df_set_obs.drop(columns=["journey_id", "conversion_status"]).values
-            )
+
+        X = df_set_obs.drop(columns=["journey_id", "conversion_status"]).values
+        X_encoded = ohe.fit_transform(X)
         df_set_obs = format_preprocessed_obs(
-            X, df_set_obs["journey_id"].values, df_set_obs["conversion_status"].values,
+            X_encoded, df_set_obs["journey_id"].values, df_set_obs["conversion_status"].values,
             args.journey_max_len
             )
         save_as_parquet(df_set_obs, set_nm, args.bucket_nm)
@@ -56,15 +57,20 @@ def load_json_from_s3(bucket_nm: str, path: str) -> Dict:
 
     return loads(file_content)
 
-def create_categories_for_one_hot_encoding(campaign_nm_to_index: Dict) -> List[str]:
+def create_categories_for_one_hot_encoding(
+    campaign_nm_to_index: Dict, journey_max_len:int) -> List[str]:
 
     nb_categories = len(campaign_nm_to_index.keys())
-    arr_category_nms = zeros(nb_categories)
+    category_nms = zeros(nb_categories, dtype=np_object)
 
     for k, v in campaign_nm_to_index.items():
-        arr_category_nms[v] = k
+        category_nms[v] = k
     
-    return arr_category_nms.tolist()
+    categories_ohe = zeros((journey_max_len, nb_categories), dtype=np_object)
+    for i in range(journey_max_len):
+        categories_ohe[i,:] = category_nms
+
+    return categories_ohe
 
 
 def load_set(set_nm: str, bucket_nm:str) -> DataFrame:
@@ -80,14 +86,11 @@ def get_categorical_col_nms(df_set_obs: DataFrame) -> List[str]:
     return [col for col in df_set_obs.columns if col not in ["journey_id", "conversion"]]
 
 
-def create_pipeline(one_hot_category_nms: List[str]) -> Pipeline:
+def create_one_hot_encoder(one_hot_category_nms: ndarray) -> Pipeline:
 
-    pipeline = Pipeline(steps=[
-        ('one_hot_encoder', OneHotEncoder(categories=one_hot_category_nms))
-        ])
+    ohe = OneHotEncoder(categories=one_hot_category_nms.tolist(), dtype=np_bool)
 
-
-    return pipeline
+    return ohe
     
 
 def format_preprocessed_obs(

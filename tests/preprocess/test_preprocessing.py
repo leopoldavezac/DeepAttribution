@@ -1,21 +1,21 @@
 from json import load
 
 from numpy import array
-from pandas import DataFrame, read_csv
+from pandas import DataFrame, read_parquet
 
 import pytest
 
 from deep_attribution.preprocess.preprocessing import (
     main,
     create_categories_for_one_hot_encoding,
-    create_pipeline,
+    create_one_hot_encoder,
     format_preprocessed_obs
 )
     
 def test_main(mocker):
 
     BUCKET_NM = "deep-attribution"
-    JOURNEY_MAX_LEN = 3
+    JOURNEY_MAX_LEN = 10
     PARSER = ParserMock(BUCKET_NM, JOURNEY_MAX_LEN)
 
     mocker.patch(
@@ -31,7 +31,7 @@ def test_main(mocker):
         return_value=CAMPAIGN_NM_TO_INDEX
     )
 
-    DF_SET_OBS = read_csv("tests/preprocess/train_sample.csv")
+    DF_SET_OBS = read_parquet("tests/preprocess/train_sample.parquet")
 
     mocker.patch(
         "deep_attribution.preprocess.preprocessing.load_set",
@@ -59,14 +59,18 @@ class ParserMock:
 def test_create_categories_for_one_hot_encoding():
 
     INPUT = {"display":2, "facebook":1, "google":0}
-    EXXPECTED = ["google",  "facebook", "display"]
+    EXPECTED = array([
+        ["google",  "facebook", "display"],
+        ["google",  "facebook", "display"]
+    ])
+    JOURNEY_MAX_LEN = 2
 
-    obtained = create_categories_for_one_hot_encoding(INPUT)
+    obtained = create_categories_for_one_hot_encoding(INPUT, JOURNEY_MAX_LEN)
 
-    assert EXXPECTED == obtained
+    assert (EXPECTED == obtained).all()
 
 
-def test_pipeline_transform():
+def test_ohe_transform():
 
     INPUT = array(
         [["display", "google", "facebook"],
@@ -79,8 +83,8 @@ def test_pipeline_transform():
         [1, 0, 0, 0, 0, 1, 0, 0, 0]
     ])
 
-    one_hot_pipeline = create_pipeline(OHE_CATEGORIES)
-    obtained = one_hot_pipeline.fit_transform(INPUT)
+    ohe = create_one_hot_encoder(OHE_CATEGORIES)
+    obtained = ohe.fit_transform(INPUT)
 
     print(obtained)
 
