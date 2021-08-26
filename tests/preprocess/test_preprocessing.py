@@ -1,15 +1,60 @@
+from json import load
+
 from numpy import array
-from pandas.core.frame import DataFrame
+from pandas import DataFrame, read_csv
 
 import pytest
 
 from deep_attribution.preprocess.preprocessing import (
+    main,
     create_categories_for_one_hot_encoding,
     create_pipeline,
     format_preprocessed_obs
 )
-import deep_attribution.preprocess.preprocessing
     
+def test_main(mocker):
+
+    BUCKET_NM = "deep-attribution"
+    JOURNEY_MAX_LEN = 3
+    PARSER = ParserMock(BUCKET_NM, JOURNEY_MAX_LEN)
+
+    mocker.patch(
+        "deep_attribution.preprocess.preprocessing.parse_args",
+        return_value=PARSER
+    )
+
+    with open("tests/preprocess/campaign_nm_to_one_hot_index.json", "r") as f:
+        CAMPAIGN_NM_TO_INDEX = load(f)
+
+    mocker.patch(
+        "deep_attribution.preprocess.preprocessing.load_json_from_s3",
+        return_value=CAMPAIGN_NM_TO_INDEX
+    )
+
+    DF_SET_OBS = read_csv("tests/preprocess/train_sample.csv")
+
+    mocker.patch(
+        "deep_attribution.preprocess.preprocessing.load_set",
+        return_value=DF_SET_OBS
+    )
+
+    mocker.patch(
+        "deep_attribution.preprocess.preprocessing.save_as_parquet",
+        return_value=None
+    )
+
+    main()
+
+    assert True
+
+class ParserMock:
+
+    def __init__(self, bucket_nm, journey_max_len):
+
+        self.bucket_nm = bucket_nm
+        self.journey_max_len = journey_max_len
+
+
 
 def test_create_categories_for_one_hot_encoding():
 
@@ -42,7 +87,7 @@ def test_pipeline_transform():
     assert (EXPECTED == obtained).all()
 
 
-def test_format_preprocessed_obs(mocker):
+def test_format_preprocessed_obs():
 
     X = array([
         [0, 0, 1, 1, 0, 0, 0, 1, 0],
