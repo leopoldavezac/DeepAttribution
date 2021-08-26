@@ -1,3 +1,5 @@
+import os
+
 import argparse
 from typing import List, Dict
 
@@ -21,6 +23,8 @@ import boto3
 
 
 def main() -> None:
+
+    os.system("pip install fsspec")
 
     args = parse_args()
         
