@@ -6,6 +6,7 @@ from pandas import DataFrame, read_parquet
 import pytest
 
 from deep_attribution.preprocess.preprocessing import (
+    get_category_nms,
     main,
     create_categories_for_one_hot_encoding,
     create_one_hot_encoder,
@@ -65,7 +66,9 @@ def test_create_categories_for_one_hot_encoding():
     ])
     JOURNEY_MAX_LEN = 2
 
-    obtained = create_categories_for_one_hot_encoding(INPUT, JOURNEY_MAX_LEN)
+    category_nms = get_category_nms(INPUT)
+    obtained = create_categories_for_one_hot_encoding(
+        category_nms, JOURNEY_MAX_LEN)
 
     assert (EXPECTED == obtained).all()
 
@@ -76,7 +79,11 @@ def test_ohe_transform():
         [["display", "google", "facebook"],
         ["google", "display", None]]
         )
-    OHE_CATEGORIES = ["google",  "facebook", "display"]
+    OHE_CATEGORIES = array([
+        ["google",  "facebook", "display"],
+        ["google",  "facebook", "display"],
+        ["google",  "facebook", "display"]
+    ])
 
     EXPECTED = array([
         [0, 0, 1, 1, 0, 0, 0, 1, 0],
