@@ -24,7 +24,7 @@ import boto3
 
 def main() -> None:
 
-    os.system("pip install fsspec")
+    os.system("pip install fastparquet")
 
     args = parse_args()
         
