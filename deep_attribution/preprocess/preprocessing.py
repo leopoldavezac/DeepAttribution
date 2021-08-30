@@ -24,7 +24,7 @@ import boto3
 
 def main() -> None:
 
-    os.system("pip install fastparquet")
+    os.system("pip install pyarrow s3fs")
 
     args = parse_args()
         
