@@ -152,8 +152,19 @@ def format_preprocessed_obs(
 def save_as_parquet(
     df_set_obs: DataFrame, set_nm: str) -> None:
 
-    path = os.path.join("/opt/ml/processing/output/%s"% set_nm, "%s.parquet"% set_nm)
-    df_set_obs.to_parquet(path, index=False)
+    parent_folder_path = "/opt/ml/processing/output/%s"% set_nm
 
+    nb_partition = 26
+    chunk_size = df_set_obs.shape[0] // 26
+
+    for i in range(nb_partition):
+
+        chunk_start = chunk_size*i
+        chunk_end = chunk_size*(i+1) if i != 25 else None
+        df_chunk = df_set_obs.iloc[chunk_start:chunk_end]
+
+        path = os.path.join(parent_folder_path, "part_%d.parquet"%i)
+        df_chunk.to_parquet(path, index=False)
+    
 if __name__ == '__main__':
     main()
