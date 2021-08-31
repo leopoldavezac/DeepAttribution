@@ -24,8 +24,6 @@ import boto3
 
 def main() -> None:
 
-    os.system("pip install pyarrow s3fs")
-
     args = parse_args()
         
     campaign_nm_to_index = load_json_from_s3(args.bucket_nm, "campaign_nm_to_one_hot_index.json")
@@ -38,7 +36,7 @@ def main() -> None:
     set_nms = ["train", "test", "val"]
     for set_nm in set_nms:
 
-        df_set_obs = load_set(set_nm, args.bucket_nm)
+        df_set_obs = load_set(set_nm)
 
         X = df_set_obs.drop(columns=["journey_id", "conversion_status"]).values
         X_encoded = ohe.fit_transform(X)
@@ -49,7 +47,7 @@ def main() -> None:
             category_nms,
             args.journey_max_len
             )
-        save_as_parquet(df_set_obs, set_nm, args.bucket_nm)
+        save_as_parquet(df_set_obs, set_nm)
 
 
 def parse_args() -> argparse.Namespace:
@@ -96,10 +94,10 @@ def create_categories_for_one_hot_encoding(
     return categories_ohe
 
 
-def load_set(set_nm: str, bucket_nm:str) -> DataFrame:
+def load_set(set_nm: str) -> DataFrame:
 
-    path = "s3://%s/feature_store/%s.parquet" % (bucket_nm, set_nm)
-    df_set_obs = read_parquet(path)
+    path = "/opt/ml/processing/input/%s"% set_nm
+    df_set_obs = read_parquet(path, engine="pyarrow")
 
     return df_set_obs
 
@@ -158,10 +156,10 @@ def format_preprocessed_obs(
 
 
 def save_as_parquet(
-    df_set_obs: DataFrame, set_nm: str, bucket_nm:str) -> None:
+    df_set_obs: DataFrame, set_nm: str) -> None:
 
-    df_set_obs.to_parquet("s3://%s/feature_store_preprocessed/%s.parquet"%(bucket_nm, set_nm), index=False)
-
+    path = os.path.join("/opt/ml/processing/output/%s"% set_nm, "%s.parquet"% set_nm)
+    df_set_obs.to_parquet(path, index=False)
 
 if __name__ == '__main__':
     main()
