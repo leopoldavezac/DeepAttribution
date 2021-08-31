@@ -136,8 +136,6 @@ def format_preprocessed_obs(
                     )
                 )
 
-    print(X)
-
     arr_obs = concatenate([
         arr_journey_id.reshape((-1,1)),
         X,
@@ -147,10 +145,6 @@ def format_preprocessed_obs(
     df_set_obs_obs = DataFrame(
         arr_obs,
         columns=["journey_id"]+feature_nms+["conversion_status"])
-    
-    df_set_obs_obs["journey_id"] = df_set_obs_obs["journey_id"].astype("uint32")
-    for col_nm in feature_nms+["conversion_status"]:
-        df_set_obs_obs[col_nm] = df_set_obs_obs[col_nm].astype("bool")
 
     return df_set_obs_obs
 
