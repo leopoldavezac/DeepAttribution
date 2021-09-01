@@ -169,10 +169,10 @@ class JourneyBasedDeepNN:
             outputs=self.__nn.get_layer("attribution").output
             )
 
-        attention_model.save(model_dir)
+        attention_model.save(model_dir+"/1")
         
 
 
     def save_model(self, model_dir: str) -> None:
 
-        self.__nn.save(model_dir)
+        self.__nn.save(model_dir+"/1")
