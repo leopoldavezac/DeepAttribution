@@ -20,7 +20,6 @@ def get_nb_campaigns_from_s3(bucket_nm: str) -> int:
 def get_X_sample(journey_max_len: int, nb_campaigns: int, bucket_nm: str) -> ndarray:
 
     from pandas import read_parquet
-    from numpy import zeros, float16
 
     SET_PARENT_DIR_PATH = "feature_store_preprocessed/train.parquet"
 
@@ -30,6 +29,13 @@ def get_X_sample(journey_max_len: int, nb_campaigns: int, bucket_nm: str) -> nda
 
     X = df.drop(columns=["conversion_status", "journey_id"]).values
     del df
+
+    return reshape_X_with_one_hot_along_z(X, nb_campaigns, journey_max_len)
+
+
+def reshape_X_with_one_hot_along_z(X:ndarray, nb_campaigns:int, journey_max_len:int) -> ndarray:
+
+    from numpy import zeros, float16
 
     nb_obs = X.shape[0]
     X_tensor = zeros((nb_obs, journey_max_len, nb_campaigns), dtype=float16)
