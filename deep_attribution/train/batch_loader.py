@@ -86,8 +86,6 @@ class BatchLoader(Sequence):
         y = df.loc[:,self.__target_nm].values
         X = df.drop(columns=[self.__target_nm, "journey_id"]).values
 
-        print("X.dtypes", X.dtype)
-
         return [X, y]
 
 
