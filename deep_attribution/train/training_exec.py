@@ -24,7 +24,7 @@ def main(config: Dict) -> EstimatorBase:
     estimator = TensorFlow(
         dependencies=['deep_attribution', "config"],
         entry_point='train.py',
-        model_dir="model",
+        model_dir="/opt/ml/model",
         instance_type=config["training"]["instance_type"],
         instance_count=config["preprocessing"]["instance_count"],
         hyperparameters=hyperparameters,
