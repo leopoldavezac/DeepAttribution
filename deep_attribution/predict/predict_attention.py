@@ -17,7 +17,7 @@ def main(estimator: EstimatorBase, config: Dict) -> None:
 
     array_journey_id = df_train.journey_id.values
     # drop journey id
-    X_tensor = reshape_X_with_one_hot_along_z(df_train.drop(columns="conversion"), config["journey_max"], nb_campaigns)
+    X_tensor = reshape_X_with_one_hot_along_z(df_train.drop(columns="journey_id"), config["journey_max"], nb_campaigns)
     del df_train
 
     predictor = estimator.deploy(
@@ -40,7 +40,7 @@ def get_df_train(bucket_nm: str) -> DataFrame:
 
     df = read_parquet("s3://{}/feature_store_preprocessed/train.parquet".format(bucket_nm))
 
-    return df.drop(columns="conversion")
+    return df.drop(columns="conversion_status")
 
 
 
