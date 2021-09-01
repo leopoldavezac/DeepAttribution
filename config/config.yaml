@@ -9,6 +9,9 @@ preprocessing:
 training:
   instance_type: "ml.c5.xlarge"
   instance_count: 2
+prediction:
+  instance_type: "ml.c5.xlarge"
+  instance_count: 1
 attention_report_generation:
   instance_type: "ml.c5.xlarge"
   instance_count: 2

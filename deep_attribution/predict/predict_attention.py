@@ -16,12 +16,13 @@ def main(estimator: EstimatorBase, config: Dict) -> None:
     df_train = get_df_train(config["bucket_nm"])
 
     array_journey_id = df_train.journey_id.values
+    # drop journey id
     X_tensor = reshape_X_with_one_hot_along_z(df_train.drop(columns="conversion"), config["journey_max"], nb_campaigns)
     del df_train
 
     predictor = estimator.deploy(
-        initial_instance_count=1,
-        instance_type="ml.t3.medium"
+        initial_instance_count=config["prediction"]["instance_type"],
+        instance_type=config["prediction"]["instance_type"]
     )
 
     array_attention = zeros((X_tensor.shape[0], config["journey_max_len"]+1))
