@@ -1,18 +1,22 @@
 from typing import Dict, List
 
+import argparse
+
 from pyspark.sql import DataFrame
 from pyspark.sql.session import SparkSession
 from pyspark.sql.types import *
 
-def main(config: Dict) -> None:
+def main() -> None:
+
+    args = parse_args()
 
     spark = create_spark_session()
 
-    df_campaigns_at_journey_level = load_campaigns_at_journey_level(spark)
-    df_attentions_at_journey_level = load_attention_at_journey_level(spark)
+    df_campaigns_at_journey_level = load_campaigns_at_journey_level(spark, args.bucket_nm)
+    df_attentions_at_journey_level = load_attention_at_journey_level(spark, args.bucket_nm)
 
-    df_campaign = unpivot_on_journey_id(spark, df_campaigns_at_journey_level, config["journey_max_len"])
-    df_attention = unpivot_on_journey_id(spark, df_attentions_at_journey_level, config["journey_max_len"])
+    df_campaign = unpivot_on_journey_id(spark, df_campaigns_at_journey_level, args.journey_max_len)
+    df_attention = unpivot_on_journey_id(spark, df_attentions_at_journey_level, args.journey_max_len)
     del df_attentions_at_journey_level, df_campaigns_at_journey_level
 
     df_campaign = create_impression_id_field(spark, df_campaign)
@@ -37,20 +41,31 @@ def main(config: Dict) -> None:
     )
     del df_campaign_total_attention, df_campaign_average_attention
 
-    save_as_parquet(df_attention_at_campaign_level)
+    save_as_parquet(df_attention_at_campaign_level, args.bucket_nm)
     
+
+
+def parse_args() -> argparse.Namespace:
+
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--bucket_nm', type=str)
+
+    parser.add_argument('--journey_max_len', type=int)
+
+    return parser.parse_args()
 
 def create_spark_session() -> SparkSession:
 
     return SparkSession.builder.getOrCreate()
 
-def load_campaigns_at_journey_level(spark: SparkSession) -> DataFrame:
+def load_campaigns_at_journey_level(spark: SparkSession, bucket_nm:str) -> DataFrame:
     
-    return spark.read.parquet("/opt/ml/processing/feature_store/campaigns_at_journey_level.parquet")
+    return spark.read.parquet("s3://%s/feature_store/train.parquet" % bucket_nm)
 
-def load_attention_at_journey_level(spark: SparkSession) -> DataFrame:
+def load_attention_at_journey_level(spark: SparkSession, bucket_nm:str) -> DataFrame:
     
-    return spark.read.parquet("/opt/ml/processing/attention_report/attentions_at_journey_level.parquet")
+    return spark.read.parquet("s3://%s/attention_report/attention_score.parquet"%bucket_nm)
 
 def unpivot_on_journey_id(
     spark: SparkSession,
@@ -183,7 +198,7 @@ def join_on_campaign_nm(left: DataFrame, right: DataFrame) -> DataFrame:
 
     return left.join(right, on="campaign_nm")
 
-def save_as_parquet(df: DataFrame) -> None:
+def save_as_parquet(df: DataFrame, bucket_nm:str) -> None:
 
-    df.write.parquet("/opt/ml/processing/output/campaign_attention.parquet")
+    df.write.parquet("s3://%s/attention_report/campaign_attention.parquet" % bucket_nm)
 

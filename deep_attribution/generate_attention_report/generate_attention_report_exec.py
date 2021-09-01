@@ -16,7 +16,7 @@ def main(config: Dict) -> None:
     role = sagemaker.get_execution_role()
 
     spark_processor = PySparkProcessor(
-        base_job_name="deep-attribution-generate-attention_report",
+        base_job_name="deep-attribution-generate-attention-report",
         framework_version="2.4",
         role=role,
         instance_count=config["attention_report_generation"]["instance_count"],
@@ -28,22 +28,5 @@ def main(config: Dict) -> None:
         submit_app="generate_attention_report/generate_attention_report.py",
         spark_event_logs_s3_uri=os.path.join("s3://", config["bucket_nm"], "attention_report", "spark_event_logs"),
         logs=False,
-        arguments=job_args,
-        inputs=[
-            ProcessingInput(
-                input_name="campaigns_at_journey_level",
-                source=os.path.join("s3://", config["bucket_nm"], "feature_store", "train.parquet"),
-                destination="/opt/ml/processing/feature_store"),
-            ProcessingInput(
-                input_name="attentions_at_journey_level",
-                source=os.path.join("s3://", config["bucket_nm"], "attention_report", "attention_score.parquet"),
-                destination="/opt/ml/processing/attention_report")
-        ],
-        outputs=[
-            ProcessingOutput(
-                output_name="attention_report",
-                source="opt/ml/processing/output/attention_report",
-                destination=os.path.join("s3://", config["bucket_nm"], "attention_report", "campaign_attention.parquet")
-            )
-        ]
+        arguments=job_args
     )
