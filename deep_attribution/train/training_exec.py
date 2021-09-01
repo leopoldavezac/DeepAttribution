@@ -22,7 +22,7 @@ def main(config: Dict) -> EstimatorBase:
         }
 
     estimator = TensorFlow(
-        dependencies=['deep_attribution', 'smote'],
+        dependencies=['deep_attribution', "config"],
         entry_point='train.py',
         model_dir="model",
         instance_type=config["training"]["instance_type"],
@@ -58,13 +58,13 @@ def main(config: Dict) -> EstimatorBase:
                                 objective_metric_name,
                                 hyperparameter_ranges,
                                 metric_definitions,
-                                max_jobs=5,
+                                max_jobs=config["hp_tuning_nb_iterations"],
                                 max_parallel_jobs=2,
                                 objective_type=objective_type)
 
     tuning_job_name = "deep-attribution-training-{}".format(strftime("%d-%H-%M-%S", gmtime()))
     
-    tuner.fit(job_name=tuning_job_name, inputs=config)
+    tuner.fit(job_name=tuning_job_name, inputs={"s3://%s/feature_store_preprocessed/"})
     tuner.wait()
 
     estimator = tuner.best_estimator()
