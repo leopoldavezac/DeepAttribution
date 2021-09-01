@@ -5,9 +5,6 @@ from json import dumps, loads
 from numpy import ndarray
 
 import boto3
-from tensorflow.python.keras import engine
-
-from deep_attribution.train.batch_loader import BatchLoader
 
 
 def get_nb_campaigns_from_s3(bucket_nm: str) -> int:
