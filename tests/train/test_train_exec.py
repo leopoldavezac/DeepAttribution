@@ -14,35 +14,11 @@ sagemaker_session = LocalSession()
 sagemaker_session.config = {'local': {'local_code': True}}
 
 config = {
-    "journey_max_len":"3"
+    "journey_max_len":10,
+    "bucket_nm":"deep-attribution"
 }
 
-def test_execute(mocker):
-
-    
-    def MOCK_LOAD_BATCH(self, train_file_nm):
-        
-        return [
-            array([
-                [0, 0, 1, 1, 0, 0, 0, 1, 0],
-                [1, 0, 0, 0, 0, 1, 0, 0, 0]
-            ]),
-            array([True, False])
-        ]
-
-    BATCH_FILE_NMS = [1, 2, 3] # BatchLoader.__load_batch() is mocked here, batch 
-                               # file nms only set len
-                            
-
-    mocker.patch(
-        "deep_attribution.train.batch_loader.get_file_nms_in_s3",
-        return_value=BATCH_FILE_NMS
-    )
-
-    mocker.patch(
-        "deep_attribution.train.train.BatchLoader._BatchLoader__load_batch",
-        MOCK_LOAD_BATCH
-        )
+def test_execute():
 
     sagemaker.Session()
 
@@ -58,6 +34,7 @@ def test_execute(mocker):
         }
 
     local_estimator = TensorFlow(
+        dependencies=["deep_attribution", "config"],
         entry_point='deep_attribution/train/train.py',
         model_dir=model_dir,
         instance_type=train_instance_type,
@@ -68,20 +45,17 @@ def test_execute(mocker):
         framework_version='2.2',
         py_version='py37',
         script_mode=True,
-        environment=config
         )
 
     local_estimator.fit({
-        "train":"file://data/train.parquet",
-        "test":"file://data/test.parquet",
-        "val":"file://data/test.parquet"
+        "sets_parent_dir_path":"file://tests/train/test_data/",
         })
 
     nb_campaigns = get_nb_campaigns_from_s3(config["bucket_nm"])
 
     X_sample = get_X_sample(config["journey_max_len"], nb_campaigns, config["bucket_nm"])
 
-    local_predictor = local_estimator.deploy(initial_instance_count=1, instance_type='local')
+    local_predictor = local_estimator.deploy(initial_instance_count=1, instance_type=train_instance_type)
     print(local_predictor.predict(X_sample)['predictions'])
 
     local_predictor.delete_endpoint()
