@@ -2,7 +2,7 @@ from typing import List
 
 from glob import iglob
 
-from numpy import uint8, ndarray, zeros
+from numpy import bool8, ndarray, zeros
 from numpy.random import shuffle
 from pandas import read_parquet
 
@@ -68,7 +68,7 @@ class BatchLoader(Sequence):
     def __reshape_as_tensor_with_one_hot_along_z(self, X:ndarray) -> ndarray:
 
         nb_obs = X.shape[0]
-        X_tensor = zeros((nb_obs, self.__journey_max_len, self.__nb_campaigns), dtype=uint8)
+        X_tensor = zeros((nb_obs, self.__journey_max_len, self.__nb_campaigns), dtype=bool8)
 
         for index in range(self.__journey_max_len):
             
