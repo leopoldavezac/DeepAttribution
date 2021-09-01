@@ -54,7 +54,9 @@ def test_execute():
     X_sample = get_X_sample(config["journey_max_len"], nb_campaigns, config["bucket_nm"])
 
     local_predictor = local_estimator.deploy(initial_instance_count=1, instance_type=train_instance_type)
-    print(local_predictor.predict(X_sample))
+    pred = local_predictor.predict(X_sample)["predictions"]
+
+    print(pred.shape)
 
     local_predictor.delete_endpoint()
 

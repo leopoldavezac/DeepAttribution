@@ -20,7 +20,7 @@ def get_nb_campaigns_from_s3(bucket_nm: str) -> int:
 def get_X_sample(journey_max_len: int, nb_campaigns: int, bucket_nm: str) -> ndarray:
 
     from pandas import read_parquet
-    from numpy import zeros, bool8
+    from numpy import zeros, float16
 
     SET_PARENT_DIR_PATH = "feature_store_preprocessed/train.parquet"
 
@@ -32,7 +32,7 @@ def get_X_sample(journey_max_len: int, nb_campaigns: int, bucket_nm: str) -> nda
     del df
 
     nb_obs = X.shape[0]
-    X_tensor = zeros((nb_obs, journey_max_len, nb_campaigns), dtype=bool8)
+    X_tensor = zeros((nb_obs, journey_max_len, nb_campaigns), dtype=float16)
 
     for index in range(journey_max_len):
         
