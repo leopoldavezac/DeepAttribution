@@ -1,10 +1,13 @@
-from typing import List, Dict
+from typing import Dict
 
 from json import dumps, loads
 
-from numpy import ndarray, zeros
+from numpy import ndarray
 
 import boto3
+from tensorflow.python.keras import engine
+
+from deep_attribution.train.batch_loader import BatchLoader
 
 
 def get_nb_campaigns_from_s3(bucket_nm: str) -> int:
@@ -20,28 +23,24 @@ def get_nb_campaigns_from_s3(bucket_nm: str) -> int:
 def get_X_sample(journey_max_len: int, nb_campaigns: int, bucket_nm: str) -> ndarray:
 
     from pandas import read_parquet
-        
-    BATCH_FILES_PATH = "feature_store_preprocessed/train.parquet"
+    from numpy import zeros, bool8
 
-    sample_file_nm = get_file_nms_in_s3(bucket_nm, BATCH_FILES_PATH)[0]
+    SET_PARENT_DIR_PATH = "feature_store_preprocessed/train.parquet"
 
-    df = read_parquet(sample_file_nm)
+    df = read_parquet(
+        "s3://%s/%s/part_0.parquet" % (bucket_nm, SET_PARENT_DIR_PATH),
+        engine="pyarrow")
 
-    X = df.drop(columns=["conversion", "journey_id"]).values
+    X = df.drop(columns=["conversion_status", "journey_id"]).values
     del df
 
-    X_tensor = reshape_X_with_one_hot_along_z(X, journey_max_len, nb_campaigns)
-
-    return X_tensor
-
-def reshape_X_with_one_hot_along_z(X: ndarray, journey_max_len: int, nb_campaigns: int) -> ndarray:
-
     nb_obs = X.shape[0]
-    X_tensor = zeros((nb_obs, journey_max_len, nb_campaigns))
+    X_tensor = zeros((nb_obs, journey_max_len, nb_campaigns), dtype=bool8)
 
     for index in range(journey_max_len):
-        X_tensor[:,index,:] = X[:,nb_campaigns*index, nb_campaigns*(index+1)]
-
+        
+        X_tensor[:,index,:] = X[:,nb_campaigns*index:nb_campaigns*(index+1)]
+    
     return X_tensor
 
 
@@ -53,25 +52,6 @@ def write_json_to_s3(json_object:Dict, bucket_nm: str, path: str) -> None:
 
     obj.put(Body=bytes(dumps(json_object).encode("UTF-8")))
 
-
-def get_file_nms_in_s3(
-    bucket_nm: str, dir_path: str, file_ext: str = None
-    ) -> List[str]:
-
-    file_nms = []
-
-    conn = boto3.resource("s3")
-    bucket = conn.get_bucket(bucket_nm)
-
-    for file_nm in bucket.list(prefix=dir_path):
-
-        if file_ext is not None:
-            if file_nm[-len(file_ext):] == file_ext:
-                file_nms.append(file_nm)
-        else:
-            file_nms.append(file_nm)
-
-    return file_nms
 
 
 def load_json_from_s3(bucket_nm: str, path: str) -> Dict:
