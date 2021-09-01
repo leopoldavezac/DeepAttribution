@@ -30,7 +30,7 @@ def test_execute():
             "dropout_lstm":0.2,
             "recurrent_dropout_lstm":0.1,
             "learning_rate":0.01,
-            "epochs":5
+            "epochs":1
         }
 
     local_estimator = TensorFlow(
