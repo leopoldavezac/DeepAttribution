@@ -63,7 +63,9 @@ class JourneyBasedDeepNN:
 
     def __create_input_layer(self) -> None:
 
-        self.__input_layer = Input(shape=(self.__max_nb_eng_per_journey, self.__n_cmpgns))
+        self.__input_layer = Input(
+            shape=(self.__max_nb_eng_per_journey, self.__n_cmpgns)
+            )
 
     def __create_cmpgn_embedding_layer(self, n_hidden_units: int) -> None:
 
@@ -174,7 +176,3 @@ class JourneyBasedDeepNN:
     def save_model(self, model_dir: str) -> None:
 
         self.__nn.save(model_dir)
-
-    # def load_model(self, model_dir: str) -> None:
-
-    #     self.__nn = 
