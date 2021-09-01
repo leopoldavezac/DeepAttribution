@@ -12,4 +12,4 @@ training:
 attention_report_generation:
   instance_type: "ml.c5.xlarge"
   instance_count: 2
-
+hp_tuning_nb_iterations: 10
