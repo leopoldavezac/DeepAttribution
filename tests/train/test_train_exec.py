@@ -1,7 +1,5 @@
 import pytest
 
-from numpy import array
-
 import sagemaker
 from sagemaker.tensorflow import TensorFlow
 from sagemaker.local import LocalSession
@@ -22,7 +20,7 @@ def test_execute():
 
     sagemaker.Session()
 
-    model_dir = 'model'
+    model_dir = '/opt/ml/model'
     train_instance_type = 'local'
     hyperparameters = {
             "n_hidden_units_embedding":40,
@@ -56,10 +54,8 @@ def test_execute():
     X_sample = get_X_sample(config["journey_max_len"], nb_campaigns, config["bucket_nm"])
 
     local_predictor = local_estimator.deploy(initial_instance_count=1, instance_type=train_instance_type)
-    print(local_predictor.predict(X_sample)['predictions'])
+    print(local_predictor.predict(X_sample))
 
     local_predictor.delete_endpoint()
-
-    local_predictor.delete_model()
 
     assert True
