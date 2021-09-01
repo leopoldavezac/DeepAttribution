@@ -15,12 +15,15 @@ def MOCK_LOAD_BATCH(self, train_file_nm):
         array([True, False])
     ]
 
+def MOCK_GET_BATCH_FILE_NMS(self):
+
+    return [1, 2, 3] # BatchLoader.__load_batch() is mocked here, batch 
+                               # file nms only set len
+
 def test_next(mocker):
 
     SET_NM = "train"
    
-    BATCH_FILE_NMS = [1, 2, 3] # BatchLoader.__load_batch() is mocked here, batch 
-                               # file nms only set len
     NB_CAMPAIGNS = 3
     JOURNEY_MAX_LEN = 3
 
@@ -34,8 +37,8 @@ def test_next(mocker):
     NB_BATCHS = 3
 
     mocker.patch(
-        "deep_attribution.train.batch_loader.get_file_nms_in_s3",
-        return_value=BATCH_FILE_NMS
+        "deep_attribution.train.batch_loader.BatchLoader._BatchLoader__get_batch_file_nms",
+        MOCK_GET_BATCH_FILE_NMS
         )
     mocker.patch(
         "deep_attribution.train.batch_loader.BatchLoader._BatchLoader__load_batch",
@@ -47,7 +50,7 @@ def test_next(mocker):
         SET_NM,
         NB_CAMPAIGNS,
         JOURNEY_MAX_LEN,
-        bucket_nm = "" #not used because of mock
+        set_parent_dir_path = "" #not used because of mock
     )
 
     assert NB_BATCHS == len(batch_loader)
@@ -74,8 +77,9 @@ def test_model_integration(mocker):
     JOURNEY_MAX_LEN = 3
 
     mocker.patch(
-        "deep_attribution.train.batch_loader.get_file_nms_in_s3",
-        return_value=BATCH_FILE_NMS)
+        "deep_attribution.train.batch_loader.BatchLoader._BatchLoader__get_batch_file_nms",
+        MOCK_GET_BATCH_FILE_NMS
+        )
 
     mocker.patch(
         "deep_attribution.train.batch_loader.BatchLoader._BatchLoader__load_batch",
@@ -87,7 +91,8 @@ def test_model_integration(mocker):
         SET_NM,
         NB_CAMPAIGNS,
         JOURNEY_MAX_LEN,
-        bucket_nm = "" #not used because of mock
+        set_parent_dir_path=""
+        
     )
 
     model = JourneyBasedDeepNN(
