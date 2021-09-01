@@ -3,12 +3,11 @@ from pyspark.sql.dataframe import DataFrame
 
 import pytest
 
-from numpy import allclose
-
 from pyspark.sql.session import SparkSession
 from pyspark.sql.types import *
 
 from deep_attribution.generate_attention_report.generate_attention_report import (
+    main,
     unpivot_on_journey_id,
     create_impression_id_field,
     join_on_impression_id,
@@ -21,6 +20,49 @@ os.environ['PYSPARK_DRIVER_PYTHON'] = sys.executable
 
 SPARK = SparkSession.builder.getOrCreate()
 JOURNEY_MAX_LEN = 2
+
+def test_main(mocker):
+
+    JOURNEY_MAX_LEN = 10
+    BUCKET_NM = "deep-attribution"
+
+    PARSER = ParserMock(BUCKET_NM, JOURNEY_MAX_LEN)
+
+    mocker.patch(
+        "deep_attribution.generate_attention_report.generate_attention_report.parse_args",
+        return_value = PARSER
+    )
+    
+    DF_CAMPAIGNS = SPARK.read.parquet("tests/generate_attention_report/campaigns.parquet")
+
+    mocker.patch(
+        "deep_attribution.generate_attention_report.generate_attention_report.load_campaigns_at_journey_level",
+        return_value = DF_CAMPAIGNS
+    )
+
+    DF_ATTENTION = SPARK.read.parquet("tests/generate_attention_report/attention.parquet")
+
+    mocker.patch(
+        "deep_attribution.generate_attention_report.generate_attention_report.load_attention_at_journey_level",
+        return_value = DF_ATTENTION
+    )
+
+    mocker.patch(
+        "deep_attribution.generate_attention_report.generate_attention_report.save_as_parquet",
+        return_value = None
+    )
+
+    main()
+
+    assert True
+
+
+class ParserMock:
+
+    def __init__(self, bucket_nm, journey_max_len):
+        self.bucket_nm = bucket_nm
+        self.journey_max_len = journey_max_len
+
 
 @pytest.mark.parametrize("input, expected", [
     (
