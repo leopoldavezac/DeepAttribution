@@ -47,7 +47,7 @@ def main(config: Dict) -> EstimatorBase:
 
     metric_definitions = [{
         'Name': 'test_auc',
-        'Regex': ' auc - test: ([0-9\\.]+)'}
+        'Regex': 'auc - test: ([0-9\\.]+)'}
         ]
 
     objective_metric_name = 'test_auc'
@@ -62,9 +62,12 @@ def main(config: Dict) -> EstimatorBase:
                                 max_parallel_jobs=2,
                                 objective_type=objective_type)
 
-    tuning_job_name = "deep-attribution-training-{}".format(strftime("%d-%H-%M-%S", gmtime()))
+    tuning_job_name = "da-training-{}".format(strftime("%d-%H-%M-%S", gmtime()))
     
-    tuner.fit(job_name=tuning_job_name, inputs={"s3://%s/feature_store_preprocessed/"})
+    tuner.fit(
+        job_name=tuning_job_name,
+        inputs={"sets_parent_dir_path": "s3://%s/feature_store_preprocessed/" % config["bucket_nm"]}
+        )
     tuner.wait()
 
     estimator = tuner.best_estimator()
