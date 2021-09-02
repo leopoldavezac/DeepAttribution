@@ -154,13 +154,13 @@ def save_as_parquet(
 
     parent_folder_path = "/opt/ml/processing/output/%s"% set_nm
 
-    nb_partition = 26
-    chunk_size = df_set_obs.shape[0] // 26
+    chunk_size = 32
+    nb_partition = (df_set_obs.shape[0] // chunk_size) + 1
 
     for i in range(nb_partition):
 
         chunk_start = chunk_size*i
-        chunk_end = chunk_size*(i+1) if i != 25 else None
+        chunk_end = chunk_size*(i+1) if i != (nb_partition - 1) else None
         df_chunk = df_set_obs.iloc[chunk_start:chunk_end]
 
         path = os.path.join(parent_folder_path, "part_%d.parquet"%i)
