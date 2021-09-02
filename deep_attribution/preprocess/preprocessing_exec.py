@@ -25,7 +25,7 @@ def main(config: Dict) -> None:
     )
 
     sklearn_job.run(
-        code="preprocess/preprocessing.py",
+        code="deep_attribution/preprocess/preprocessing.py",
         logs=False,
         arguments=job_args,
         inputs=[
