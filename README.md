@@ -5,7 +5,7 @@
 ![GitHub stars](https://img.shields.io/github/stars/leopoldavezac/DeepAttribution?style=social)
 ![GitHub forks](https://img.shields.io/github/forks/leopoldavezac/DeepAttribution?style=social)
 
-DeepAttribution is a AWS (sagemaker) ML pipeline that allows marketing data scientist and ML engineer to compute multi touch attribution results using the state of the art technique without effort.
+DeepAttribution is an AWS (sagemaker) ML pipeline that allows marketing data scientists and ML engineers to compute multi touch-attribution results using the state of the art technique without effort.
 
 ## Prerequistes
 
