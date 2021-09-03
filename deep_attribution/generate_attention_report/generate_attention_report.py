@@ -29,7 +29,7 @@ def main() -> None:
         spark,
         df_campaign_attention
         )
-    df_campaign_average_attention = compute_total_attention_by_campaign(
+    df_campaign_average_attention = compute_average_attention_by_campaign(
         spark,
         df_campaign_attention
     )
@@ -85,7 +85,7 @@ def unpivot_on_journey_id(
         )
 
     schema = StructType([
-            StructField("journey_id", IntegerType(), False),
+            StructField("journey_id", LongType(), False),
             StructField(pivoted_values_nm+"_index_in_journey", IntegerType(), False),
             StructField(
                 pivoted_values_nm,
@@ -158,7 +158,7 @@ def create_impression_id_field(spark: SparkSession, df_impression: DataFrame) ->
     df_impression = spark.sql(sql)
 
     schema = StructType([
-        StructField("impression_id", IntegerType(), False),
+        StructField("impression_id", LongType(), False),
         StructField(
             values_nm,
             StringType() if values_nm == "campaign_nm" else FloatType(),
