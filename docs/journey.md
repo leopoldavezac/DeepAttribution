@@ -8,21 +8,21 @@ A journey is a succession of impressions that leads to a conversion or not.
 ### Case 1
 If a client converted at some point then all the prior impressions are part of the same journey.
 
-<img src="img/journey_case_1.png" width="375"/>
+<img src="img/journey_case_1.PNG" width="375"/>
 
 ### Case 2
 If a client converted multiple times then all the prior impressions are part of the same journey until the next past conversion.
 
-<img src="img/journey_case_2.png"  width="750"/>
+<img src="img/journey_case_2.PNG"  width="750"/>
 
 ### Case 3
 
 If a client never converted then all the impressions are part of the same journey.
-<img src="img/journey_case_3.png"  width="375"/>
+<img src="img/journey_case_3.PNG"  width="375"/>
 
 ### Case 4
 If a client received new impressions after a conversion and did not convert all impressions after the conversion are part of the same journey.
-<img src="img/journey_case_4.png"  width="750"/>
+<img src="img/journey_case_4.PNG"  width="750"/>
 
 
 ## How to define the journey max length
