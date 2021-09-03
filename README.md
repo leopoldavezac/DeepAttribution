@@ -39,12 +39,12 @@ DeepAttribution is a AWS (sagemaker) ML pipeline that allows marketing data scie
 * AWS role with sagemaker execution permission and read/write permissions on the s3 bucket mentionned above.
 * Basic knowledge of LSTM and familiarity with the multi touch attribution model presented in [Deep Neural Net with Attention for Multi-channel
 Multi-touch Attribution](https://arxiv.org/pdf/1809.02230.pdf)
-* Understanding of [model implementation](./docs/model_implementation.md) and [ml pipeline](./docs/ml_pipeline.md)
+* Understanding of what is a [journey](./docs/journey.md), the [model](./docs/model.md) and the [pipeline](./docs/pipeline.md)
 
 
 ## Using DeepAttribution
 
-1. Define the journey maximum length. Please refer to this [doc](./docs/defining_journey_max_length.md) to define it.
+1. Define the journey maximum length. Please refer to this [doc](./docs/journey.md) to define it.
 2. Update the config file (config.yaml) with the desired instance type and count, bucket name and the journey maximum length.
 3. In the **deep-attribution instance** open the pipeline execution notebook (deep_attribution/pipeline_exec.ipynb)
 4. Run all the cells 
