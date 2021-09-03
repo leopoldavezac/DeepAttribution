@@ -9,7 +9,7 @@ DeepAttribution is a AWS (sagemaker) ML pipeline that allows marketing data scie
 
 ## Prerequistes
 
-* A dataset at impression level (**impressions dataset**) as parquet file with the following schema:
+* A **big** dataset (> 1GB) at impression level (**impressions dataset**) as parquet file with the following schema:
 
     * uid: the user/client unique identifier
     * timestamp: unix timestamp
