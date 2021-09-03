@@ -37,8 +37,7 @@ DeepAttribution is a AWS (sagemaker) ML pipeline that allows marketing data scie
 
 * Sagemaker notebook instance with git repo set to this repo (**deep-attribution bucket**).
 * AWS role with sagemaker execution permission and read/write permissions on the s3 bucket mentionned above.
-* Basic knowledge of LSTM and familiarity with the multi touch attribution model presented in [Deep Neural Net with Attention for Multi-channel
-Multi-touch Attribution](https://arxiv.org/pdf/1809.02230.pdf)
+* Basic knowledge of LSTM and familiarity with the multi touch attribution model presented in [Deep Neural Net with Attention for Multi-channel Multi-touch Attribution](https://arxiv.org/pdf/1809.02230.pdf)
 * Understanding of what is a [journey](./docs/journey.md), the [model](./docs/model.md) and the [pipeline](./docs/pipeline.md)
 
 
