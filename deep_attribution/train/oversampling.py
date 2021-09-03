@@ -8,12 +8,17 @@ from numpy.random import choice
 def oversample(X: ndarray, y:ndarray) -> List[ndarray]:
     
     filter_true = y == True
+
+    if filter_true.sum() == 0:
+        return X, y
+
     filter_false = ~filter_true
 
     X_false = X[filter_false]
     y_false = y[filter_false]
 
     indices_true = flatnonzero(y)
+
     oversampled_indices = choice(indices_true, size=len(y_false))
 
     X_true_resampled = X[oversampled_indices]
