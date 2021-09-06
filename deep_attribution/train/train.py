@@ -5,14 +5,15 @@ import sys
 
 from typing import Dict
 
-from json import loads
 from yaml import load
 
 import argparse
 
+from pandas import read_parquet
+
 from deep_attribution.model.journey_based_deepnn import JourneyBasedDeepNN
-from deep_attribution.train.batch_loader import BatchLoader
-from deep_attribution.train.utilities import write_json_to_s3, get_nb_campaigns_from_s3
+from deep_attribution.train.utilities import write_json_to_s3, get_nb_campaigns_from_s3, reshape_X_with_one_hot_along_z
+from deep_attribution.train.oversampling import oversample
 
 TARGET_NM = "conversion_status"
 
@@ -29,28 +30,34 @@ def main():
     hp_nm_to_val = get_hp_nm_to_val_from(args)
     model = get_model(hp_nm_to_val, nb_campaigns, config["journey_max_len"])
 
-    set_nm_to_batch_loader = {}
+    set_nm_to_set_vals = {}
 
     for set_nm in ["train", "test", "val"]:
 
-        set_nm_to_batch_loader[set_nm] = BatchLoader(
-            TARGET_NM,
-            set_nm,
-            nb_campaigns,
-            config["journey_max_len"],
-            args.sets_parent_dir_path,
-            oversample = True if set_nm == "train" else False
-        )
+        df = read_parquet(args.sets_parent_dir_path+"/%s.parquet" % set_nm)
+        df.iloc[:,1:] = df.iloc[:,1:].astype("bool")
 
-    model.batch_fit(
-        set_nm_to_batch_loader["train"],
-        set_nm_to_batch_loader["test"]
+        y = df.loc[:,"conversion_status"].values
+        X = df.drop(columns=["conversion_status", "journey_id"]).values
+
+        if set_nm == "train":
+            X, y = oversample(X, y)
+
+        X = reshape_X_with_one_hot_along_z(X, nb_campaigns, config["journey_max_len"])
+
+        set_nm_to_set_vals[set_nm] = {"X":X, "y":y}
+        del X, y
+
+
+    model.fit(
+        set_nm_to_set_vals["train"]["X"],
+        set_nm_to_set_vals["train"]["y"]
     )
 
     set_nm_to_score = {}
 
-    for set_nm, set_loader in set_nm_to_batch_loader.items():
-        set_nm_to_score[set_nm] = model.batch_evaluate(set_loader)
+    for set_nm, set_vals in set_nm_to_set_vals.items():
+        set_nm_to_score[set_nm] = model.evaluate(set_vals["X"], set_vals["y"])
         print("auc - {}: {}".format(set_nm, set_nm_to_score[set_nm][2]))
     
     write_json_to_s3(set_nm_to_score, config["bucket_nm"], "score.json")
